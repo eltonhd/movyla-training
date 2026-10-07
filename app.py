@@ -44,10 +44,9 @@ os.makedirs(
 
 def conectar():
 
-    conn = sqlite3.connect(
-        "meutreino.db"
-    )
+    caminho_banco = os.environ.get("DATABASE_PATH", "meutreino.db")
 
+    conn = sqlite3.connect(caminho_banco)
     conn.row_factory = sqlite3.Row
 
     return conn
