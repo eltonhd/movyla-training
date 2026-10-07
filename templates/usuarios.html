@@ -1,17 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Usuários - MOVYLA Training</title>
+<title>Usuários - MOVYLA Training</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='movyla.css') }}">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='movyla.css') }}">
+```
 
 </head>
 
@@ -19,49 +22,67 @@
 
 <div class="container">
 
-    <div class="movyla-header">
+```
+<div class="movyla-header">
 
-        <div>
+    <div>
 
-            <div class="movyla-brand">
-                💪 MOVYLA TRAINING
-            </div>
-
-            <div class="movyla-subtitle">
-                Gestão de usuários
-            </div>
-
+        <div class="movyla-brand">
+            💪 MOVYLA TRAINING
         </div>
 
-        <a href="{{ url_for('inicio') }}"
-           class="btn btn-secondary">
-            ← Início
-        </a>
+        <div class="movyla-subtitle">
+            Gestão de usuários
+        </div>
 
     </div>
 
+    <a href="{{ url_for('inicio') }}"
+       class="btn btn-secondary">
+        ← Início
+    </a>
 
-    <div class="card">
-
-        <h1>👥 Usuários</h1>
-
-        <p class="muted">
-            Gerencie os Personais e seus respectivos alunos.
-        </p>
-
-    </div>
+</div>
 
 
-    <div class="card">
+<div class="card">
 
-        <h2>👤 Personais</h2>
+    <h1>👥 Usuários</h1>
 
-        {% if personais %}
+    <p class="muted">
+        Gerencie os Personais e seus respectivos alunos.
+    </p>
 
-            {% for personal in personais %}
+</div>
+
+
+<div class="card">
+
+    <h2>👤 Personais</h2>
+
+    {% if personais %}
+
+        {% for personal in personais %}
+
+            <a
+                href="{{ url_for(
+                    'usuario_personal',
+                    personal_id=personal['id']
+                ) }}"
+                style="
+                    display:block;
+                    text-decoration:none;
+                    color:inherit;
+                "
+            >
 
                 <div class="card"
-                     style="margin-top: 15px;">
+                     style="
+                        margin-top:15px;
+                        cursor:pointer;
+                        transition:transform 0.15s ease;
+                     "
+                >
 
                     <div style="
                         display:flex;
@@ -136,15 +157,9 @@
 
                         <div>
 
-                            <a
-                                href="{{ url_for(
-                                    'usuario_personal',
-                                    personal_id=personal['id']
-                                ) }}"
-                                class="btn btn-primary"
-                            >
+                            <span class="btn btn-primary">
                                 Ver alunos →
-                            </a>
+                            </span>
 
                         </div>
 
@@ -152,43 +167,46 @@
 
                 </div>
 
-            {% endfor %}
-
-        {% else %}
-
-            <div class="alert">
-
-                Nenhum Personal cadastrado.
-
-            </div>
-
-            <br>
-
-            <a
-                href="{{ url_for('personal_novo') }}"
-                class="btn btn-primary"
-            >
-                + Cadastrar Personal
             </a>
 
-        {% endif %}
+        {% endfor %}
 
-    </div>
+    {% else %}
 
+        <div class="alert">
 
-    <div style="
-        margin-top:20px;
-        text-align:center;
-    ">
+            Nenhum Personal cadastrado.
 
-        <a href="{{ url_for('inicio') }}"
-           class="btn btn-secondary">
+        </div>
 
-            🏠 Início
+        <br>
 
+        <a
+            href="{{ url_for('personal_novo') }}"
+            class="btn btn-primary"
+        >
+            + Cadastrar Personal
         </a>
 
-    </div>
+    {% endif %}
+
+</div>
+
+
+<div style="
+    margin-top:20px;
+    text-align:center;
+">
+
+    <a href="{{ url_for('inicio') }}"
+       class="btn btn-secondary">
+
+        🏠 Início
+
+    </a>
+
+</div>
+```
 
 </div>
 
