@@ -44,7 +44,10 @@ os.makedirs(
 
 def conectar():
 
-    caminho_banco = os.environ.get("DATABASE_PATH", "meutreino.db")
+    caminho_banco = os.environ.get(
+        "DATABASE_PATH",
+        "meutreino.db"
+    )
 
     conn = sqlite3.connect(caminho_banco)
     conn.row_factory = sqlite3.Row
@@ -737,6 +740,7 @@ def alunos():
         alunos=alunos
     )
 
+
 # ============================================================
 # NOVO ALUNO
 # ============================================================
@@ -1060,10 +1064,6 @@ def atribuir_treino(aluno_id):
 
         for treino in treinos_db:
 
-            # =================================================
-            # EXERCÍCIOS DO TREINO
-            # =================================================
-
             cursor.execute("""
                 SELECT
                     te.id,
@@ -1097,10 +1097,6 @@ def atribuir_treino(aluno_id):
 
                 treino_exercicio_id = exercicio["id"]
 
-                # =============================================
-                # PRESCRIÇÃO BASE DO EXERCÍCIO
-                # =============================================
-
                 cursor.execute("""
                     SELECT
                         numero_serie,
@@ -1114,10 +1110,6 @@ def atribuir_treino(aluno_id):
 
                 series_db = cursor.fetchall()
 
-                # =============================================
-                # GARANTIR QUE SERIES SEMPRE SEJA UMA LISTA
-                # =============================================
-
                 series = []
 
                 for serie in series_db:
@@ -1129,10 +1121,6 @@ def atribuir_treino(aluno_id):
                         ]
                     })
 
-                # =============================================
-                # SE NÃO EXISTIR PRESCRIÇÃO BASE
-                # =============================================
-
                 if not series:
 
                     series = [
@@ -1141,10 +1129,6 @@ def atribuir_treino(aluno_id):
                             "repeticoes_prescritas": 10
                         }
                     ]
-
-                # =============================================
-                # MONTAR EXERCÍCIO
-                # =============================================
 
                 exercicios.append({
                     "id": treino_exercicio_id,
@@ -1158,10 +1142,6 @@ def atribuir_treino(aluno_id):
                     "incremento": exercicio["incremento"],
                     "series": series
                 })
-
-            # ================================================
-            # MONTAR TREINO
-            # ================================================
 
             treino_dict = {
                 "id": treino["id"],
@@ -1194,17 +1174,9 @@ def atribuir_treino(aluno_id):
 
         erro = None
 
-        # ====================================================
-        # VALIDAR TREINO
-        # ====================================================
-
         if not treino_id:
 
             erro = "Selecione um treino."
-
-        # ====================================================
-        # VALIDAR DIA
-        # ====================================================
 
         elif dia_semana not in (
             1,
@@ -1229,10 +1201,6 @@ def atribuir_treino(aluno_id):
                 treinos=treinos,
                 erro=erro
             )
-
-        # ====================================================
-        # VERIFICAR TREINO E PERMISSÃO
-        # ====================================================
 
         if usuario_e_owner():
 
@@ -1274,10 +1242,6 @@ def atribuir_treino(aluno_id):
                 f"/alunos/{aluno_id}/treinos/atribuir"
             )
 
-        # ====================================================
-        # VERIFICAR SE JÁ EXISTE ATRIBUIÇÃO
-        # ====================================================
-
         cursor.execute("""
             SELECT
                 id
@@ -1304,10 +1268,6 @@ def atribuir_treino(aluno_id):
                 erro="Este treino já está atribuído a este aluno."
             )
 
-        # ====================================================
-        # CRIAR ATRIBUIÇÃO
-        # ====================================================
-
         cursor.execute("""
             INSERT INTO treino_alunos
             (
@@ -1324,10 +1284,6 @@ def atribuir_treino(aluno_id):
 
         treino_aluno_id = cursor.lastrowid
 
-        # ====================================================
-        # BUSCAR EXERCÍCIOS
-        # ====================================================
-
         cursor.execute("""
             SELECT
                 te.id AS treino_exercicio_id
@@ -1341,10 +1297,6 @@ def atribuir_treino(aluno_id):
         ))
 
         exercicios_db = cursor.fetchall()
-
-        # ====================================================
-        # COPIAR PRESCRIÇÃO BASE PARA O ALUNO
-        # ====================================================
 
         for exercicio in exercicios_db:
 
@@ -1365,10 +1317,6 @@ def atribuir_treino(aluno_id):
 
             series_db = cursor.fetchall()
 
-            # =================================================
-            # SE NÃO HOUVER SÉRIES BASE
-            # =================================================
-
             if not series_db:
 
                 series_db = [
@@ -1377,10 +1325,6 @@ def atribuir_treino(aluno_id):
                         "repeticoes_prescritas": 10
                     }
                 ]
-
-            # =================================================
-            # SALVAR CADA SÉRIE INDIVIDUAL
-            # =================================================
 
             for serie in series_db:
 
@@ -1397,10 +1341,6 @@ def atribuir_treino(aluno_id):
                 repeticoes = request.form.get(
                     campo
                 )
-
-                # ---------------------------------------------
-                # Se o Personal não alterar, usa a base
-                # ---------------------------------------------
 
                 if repeticoes in (
                     None,
@@ -1436,10 +1376,6 @@ def atribuir_treino(aluno_id):
 
                     repeticoes = 1
 
-                # ---------------------------------------------
-                # GRAVAR PRESCRIÇÃO INDIVIDUAL
-                # ---------------------------------------------
-
                 cursor.execute("""
                     INSERT INTO treino_aluno_series
                     (
@@ -1456,10 +1392,6 @@ def atribuir_treino(aluno_id):
                     repeticoes
                 ))
 
-        # ====================================================
-        # SALVAR
-        # ====================================================
-
         conn.commit()
 
         conn.close()
@@ -1467,10 +1399,6 @@ def atribuir_treino(aluno_id):
         return redirect(
             f"/alunos/{aluno_id}/treinos"
         )
-
-    # ========================================================
-    # GET
-    # ========================================================
 
     treinos = carregar_treinos()
 
@@ -1481,6 +1409,7 @@ def atribuir_treino(aluno_id):
         aluno=aluno,
         treinos=treinos
     )
+
 
 # ============================================================
 # EDITAR ATRIBUIÇÃO DE TREINO
@@ -1500,10 +1429,6 @@ def editar_atribuicao_treino(
 
     conn = conectar()
     cursor = conn.cursor()
-
-    # ========================================================
-    # VERIFICAR ALUNO
-    # ========================================================
 
     if usuario_e_owner():
 
@@ -1555,10 +1480,6 @@ def editar_atribuicao_treino(
 
         return redirect("/alunos")
 
-    # ========================================================
-    # VERIFICAR TREINO
-    # ========================================================
-
     if usuario_e_owner():
 
         cursor.execute("""
@@ -1599,10 +1520,6 @@ def editar_atribuicao_treino(
             f"/alunos/{aluno_id}/treinos"
         )
 
-    # ========================================================
-    # LOCALIZAR ATRIBUIÇÃO
-    # ========================================================
-
     cursor.execute("""
         SELECT
             id,
@@ -1628,10 +1545,6 @@ def editar_atribuicao_treino(
         )
 
     treino_aluno_id = atribuicao["id"]
-
-    # ========================================================
-    # CARREGAR EXERCÍCIOS
-    # ========================================================
 
     cursor.execute("""
         SELECT
@@ -1668,10 +1581,6 @@ def editar_atribuicao_treino(
             "id"
         ]
 
-        # ----------------------------------------------------
-        # PRESCRIÇÃO INDIVIDUAL
-        # ----------------------------------------------------
-
         cursor.execute("""
             SELECT
                 numero_serie,
@@ -1687,10 +1596,6 @@ def editar_atribuicao_treino(
 
         series = cursor.fetchall()
 
-        # ----------------------------------------------------
-        # FALLBACK PARA PRESCRIÇÃO BASE
-        # ----------------------------------------------------
-
         if not series:
 
             cursor.execute("""
@@ -1705,10 +1610,6 @@ def editar_atribuicao_treino(
             ))
 
             series = cursor.fetchall()
-
-        # ----------------------------------------------------
-        # SE NÃO HOUVER SÉRIE
-        # ----------------------------------------------------
 
         if not series:
 
@@ -1731,10 +1632,6 @@ def editar_atribuicao_treino(
             "incremento": exercicio["incremento"],
             "series": series
         })
-
-    # ========================================================
-    # POST
-    # ========================================================
 
     if request.method == "POST":
 
@@ -1763,10 +1660,6 @@ def editar_atribuicao_treino(
                 erro="Selecione um dia da semana."
             )
 
-        # ----------------------------------------------------
-        # ATUALIZAR DIA
-        # ----------------------------------------------------
-
         cursor.execute("""
             UPDATE treino_alunos
             SET dia_semana = ?
@@ -1776,20 +1669,12 @@ def editar_atribuicao_treino(
             treino_aluno_id
         ))
 
-        # ----------------------------------------------------
-        # APAGAR PRESCRIÇÃO INDIVIDUAL
-        # ----------------------------------------------------
-
         cursor.execute("""
             DELETE FROM treino_aluno_series
             WHERE treino_aluno_id = ?
         """, (
             treino_aluno_id,
         ))
-
-        # ----------------------------------------------------
-        # RECRIAR PRESCRIÇÃO
-        # ----------------------------------------------------
 
         for exercicio in exercicios:
 
@@ -1835,10 +1720,6 @@ def editar_atribuicao_treino(
                 set(numeros_series)
             )
 
-            # ------------------------------------------------
-            # VALORES ANTERIORES
-            # ------------------------------------------------
-
             valores_anteriores = {}
 
             for serie in exercicio["series"]:
@@ -1848,10 +1729,6 @@ def editar_atribuicao_treino(
                 ] = serie[
                     "repeticoes_prescritas"
                 ]
-
-            # ------------------------------------------------
-            # SALVAR
-            # ------------------------------------------------
 
             for numero_serie in numeros_series:
 
@@ -1914,10 +1791,6 @@ def editar_atribuicao_treino(
 
         conn.commit()
 
-        # ----------------------------------------------------
-        # CONTADORES
-        # ----------------------------------------------------
-
         cursor.execute("""
             SELECT COUNT(*)
             FROM treino_aluno_series
@@ -1943,10 +1816,6 @@ def editar_atribuicao_treino(
             aluno=aluno,
             mensagem="Treino salvo com sucesso!"
         )
-
-    # ========================================================
-    # GET
-    # ========================================================
 
     conn.close()
 
@@ -1977,10 +1846,6 @@ def excluir_atribuicao_treino(
 
     conn = conectar()
     cursor = conn.cursor()
-
-    # ========================================================
-    # VERIFICAR ALUNO
-    # ========================================================
 
     if usuario_e_owner():
 
@@ -2020,10 +1885,6 @@ def excluir_atribuicao_treino(
 
         return redirect("/alunos")
 
-    # ========================================================
-    # VERIFICAR TREINO
-    # ========================================================
-
     if usuario_e_owner():
 
         cursor.execute("""
@@ -2056,10 +1917,6 @@ def excluir_atribuicao_treino(
             f"/alunos/{aluno_id}/treinos"
         )
 
-    # ========================================================
-    # LOCALIZAR ATRIBUIÇÃO
-    # ========================================================
-
     cursor.execute("""
         SELECT id
         FROM treino_alunos
@@ -2076,20 +1933,12 @@ def excluir_atribuicao_treino(
 
         treino_aluno_id = atribuicao["id"]
 
-        # ----------------------------------------------------
-        # PRIMEIRO APAGAR PRESCRIÇÕES INDIVIDUAIS
-        # ----------------------------------------------------
-
         cursor.execute("""
             DELETE FROM treino_aluno_series
             WHERE treino_aluno_id = ?
         """, (
             treino_aluno_id,
         ))
-
-        # ----------------------------------------------------
-        # DEPOIS APAGAR ATRIBUIÇÃO
-        # ----------------------------------------------------
 
         cursor.execute("""
             DELETE FROM treino_alunos
@@ -2184,10 +2033,6 @@ def treinos():
     conn = conectar()
     cursor = conn.cursor()
 
-    # ========================================================
-    # OWNER
-    # ========================================================
-
     if usuario_e_owner():
 
         cursor.execute("""
@@ -2202,10 +2047,6 @@ def treinos():
             ORDER BY
                 t.nome
         """)
-
-    # ========================================================
-    # PERSONAL
-    # ========================================================
 
     elif usuario_e_personal():
 
@@ -2224,10 +2065,6 @@ def treinos():
         """, (
             session["usuario_id"],
         ))
-
-    # ========================================================
-    # ALUNO
-    # ========================================================
 
     else:
 
@@ -2335,22 +2172,44 @@ def editar_treino(treino_id):
 
         if adicionar_exercicio_id:
 
-            # ================================================
-            # VERIFICAR SE O EXERCÍCIO EXISTE
-            # ================================================
+            # =================================================
+            # VERIFICAR SE O EXERCÍCIO PODE SER USADO
+            # =================================================
 
-            cursor.execute("""
-                SELECT
-                    id,
-                    nome,
-                    grupo_muscular,
-                    equipamento,
-                    video_url
-                FROM exercicios
-                WHERE id = ?
-            """, (
-                adicionar_exercicio_id,
-            ))
+            if usuario_e_owner():
+
+                cursor.execute("""
+                    SELECT
+                        id,
+                        nome,
+                        grupo_muscular,
+                        equipamento,
+                        video_url
+                    FROM exercicios
+                    WHERE id = ?
+                """, (
+                    adicionar_exercicio_id,
+                ))
+
+            else:
+
+                cursor.execute("""
+                    SELECT
+                        id,
+                        nome,
+                        grupo_muscular,
+                        equipamento,
+                        video_url
+                    FROM exercicios
+                    WHERE id = ?
+                      AND (
+                          responsavel_id IS NULL
+                          OR responsavel_id = ?
+                      )
+                """, (
+                    adicionar_exercicio_id,
+                    session["usuario_id"]
+                ))
 
             exercicio_novo = cursor.fetchone()
 
@@ -2362,9 +2221,9 @@ def editar_treino(treino_id):
                     f"/treinos/{treino_id}/editar"
                 )
 
-            # ================================================
+            # =================================================
             # VERIFICAR SE JÁ ESTÁ NO TREINO
-            # ================================================
+            # =================================================
 
             cursor.execute("""
                 SELECT
@@ -2387,9 +2246,9 @@ def editar_treino(treino_id):
                     f"/treinos/{treino_id}/editar?erro=exercicio_existente"
                 )
 
-            # ================================================
+            # =================================================
             # DESCOBRIR PRÓXIMA ORDEM
-            # ================================================
+            # =================================================
 
             cursor.execute("""
                 SELECT
@@ -2405,9 +2264,9 @@ def editar_treino(treino_id):
 
             proxima_ordem = cursor.fetchone()[0]
 
-            # ================================================
+            # =================================================
             # ADICIONAR EXERCÍCIO AO TREINO
-            # ================================================
+            # =================================================
 
             cursor.execute("""
                 INSERT INTO treino_exercicios
@@ -2429,9 +2288,9 @@ def editar_treino(treino_id):
 
             treino_exercicio_id = cursor.lastrowid
 
-            # ================================================
+            # =================================================
             # CRIAR PRESCRIÇÃO BASE INICIAL
-            # ================================================
+            # =================================================
 
             cursor.execute("""
                 INSERT INTO treino_series
@@ -2479,10 +2338,6 @@ def editar_treino(treino_id):
                 "id"
             ]
 
-            # =================================================
-            # PROGRESSÃO
-            # =================================================
-
             progressao = request.form.get(
                 f"progressao_{treino_exercicio_id}",
                 "automatica"
@@ -2496,10 +2351,6 @@ def editar_treino(treino_id):
             ):
 
                 progressao = "automatica"
-
-            # =================================================
-            # INCREMENTO
-            # =================================================
 
             incremento_raw = request.form.get(
                 f"incremento_{treino_exercicio_id}",
@@ -2523,10 +2374,6 @@ def editar_treino(treino_id):
 
                 incremento = 2.5
 
-            # =================================================
-            # SALVAR PROGRESSÃO
-            # =================================================
-
             cursor.execute("""
                 UPDATE treino_exercicios
                 SET
@@ -2539,20 +2386,12 @@ def editar_treino(treino_id):
                 treino_exercicio_id
             ))
 
-            # =================================================
-            # APAGAR PRESCRIÇÃO BASE
-            # =================================================
-
             cursor.execute("""
                 DELETE FROM treino_series
                 WHERE treino_exercicio_id = ?
             """, (
                 treino_exercicio_id,
             ))
-
-            # =================================================
-            # RECRIAR PRESCRIÇÃO BASE
-            # =================================================
 
             numero_serie = 1
 
@@ -2600,10 +2439,6 @@ def editar_treino(treino_id):
                 ))
 
                 numero_serie += 1
-
-            # =================================================
-            # GARANTIR PELO MENOS UMA SÉRIE
-            # =================================================
 
             if numero_serie == 1:
 
@@ -2691,18 +2526,39 @@ def editar_treino(treino_id):
     # EXERCÍCIOS DISPONÍVEIS PARA ADICIONAR
     # ========================================================
 
-    cursor.execute("""
-        SELECT
-            id,
-            nome,
-            grupo_muscular,
-            equipamento,
-            video_url
-        FROM exercicios
-        ORDER BY
-            grupo_muscular,
-            nome
-    """)
+    if usuario_e_owner():
+
+        cursor.execute("""
+            SELECT
+                id,
+                nome,
+                grupo_muscular,
+                equipamento,
+                video_url
+            FROM exercicios
+            ORDER BY
+                grupo_muscular,
+                nome
+        """)
+
+    else:
+
+        cursor.execute("""
+            SELECT
+                id,
+                nome,
+                grupo_muscular,
+                equipamento,
+                video_url
+            FROM exercicios
+            WHERE responsavel_id IS NULL
+               OR responsavel_id = ?
+            ORDER BY
+                grupo_muscular,
+                nome
+        """, (
+            session["usuario_id"],
+        ))
 
     exercicios_disponiveis_db = cursor.fetchall()
 
@@ -2751,6 +2607,7 @@ def editar_treino(treino_id):
         exercicios_disponiveis=exercicios_disponiveis,
         erro=erro
     )
+
 
 # ============================================================
 # INICIAR TREINO DE UM ALUNO ESPECÍFICO
@@ -3143,10 +3000,6 @@ def iniciar_treino(
                         reps_previstas
                     )
 
-                    # ========================================
-                    # AUTOMÁTICA
-                    # ========================================
-
                     if progressao == "automatica":
 
                         if (
@@ -3185,10 +3038,6 @@ def iniciar_treino(
 
                             tipo = "reduzir"
 
-                    # ========================================
-                    # MANTER
-                    # ========================================
-
                     elif progressao == "manter":
 
                         carga_sugerida = (
@@ -3196,10 +3045,6 @@ def iniciar_treino(
                         )
 
                         tipo = "manter"
-
-                    # ========================================
-                    # AUMENTAR
-                    # ========================================
 
                     elif progressao == "aumentar":
 
@@ -3209,10 +3054,6 @@ def iniciar_treino(
                         )
 
                         tipo = "aumentar"
-
-                    # ========================================
-                    # REDUZIR
-                    # ========================================
 
                     elif progressao == "reduzir":
 
@@ -3305,10 +3146,6 @@ def finalizar_treino(
     conn = conectar()
     cursor = conn.cursor()
 
-    # ========================================================
-    # VERIFICAR ACESSO AO ALUNO
-    # ========================================================
-
     if usuario_e_owner():
 
         cursor.execute("""
@@ -3374,10 +3211,6 @@ def finalizar_treino(
 
         return redirect("/treinos")
 
-    # ========================================================
-    # VERIFICAR ATRIBUIÇÃO
-    # ========================================================
-
     cursor.execute("""
         SELECT
             id,
@@ -3408,10 +3241,6 @@ def finalizar_treino(
     treino_aluno_id = acesso[
         "id"
     ]
-
-    # ========================================================
-    # BUSCAR TREINO
-    # ========================================================
 
     if usuario_e_owner():
 
@@ -3466,10 +3295,6 @@ def finalizar_treino(
 
         return redirect("/treinos")
 
-    # ========================================================
-    # CRIAR SESSÃO
-    # ========================================================
-
     cursor.execute("""
         INSERT INTO sessoes
         (
@@ -3486,10 +3311,6 @@ def finalizar_treino(
 
     sessao_id = cursor.lastrowid
 
-    # ========================================================
-    # BUSCAR EXERCÍCIOS
-    # ========================================================
-
     cursor.execute("""
         SELECT
             te.id AS treino_exercicio_id,
@@ -3505,10 +3326,6 @@ def finalizar_treino(
 
     exercicios = cursor.fetchall()
 
-    # ========================================================
-    # SALVAR SÉRIES REALIZADAS
-    # ========================================================
-
     for exercicio in exercicios:
 
         te_id = exercicio[
@@ -3518,10 +3335,6 @@ def finalizar_treino(
         exercicio_id = exercicio[
             "exercicio_id"
         ]
-
-        # ====================================================
-        # PRESCRIÇÃO INDIVIDUAL
-        # ====================================================
 
         cursor.execute("""
             SELECT
@@ -3537,10 +3350,6 @@ def finalizar_treino(
 
         series_prescritas = cursor.fetchall()
 
-        # ====================================================
-        # FALLBACK
-        # ====================================================
-
         if not series_prescritas:
 
             cursor.execute("""
@@ -3554,10 +3363,6 @@ def finalizar_treino(
             ))
 
             series_prescritas = cursor.fetchall()
-
-        # ====================================================
-        # SALVAR CADA SÉRIE
-        # ====================================================
 
         for serie in series_prescritas:
 
@@ -3581,10 +3386,6 @@ def finalizar_treino(
 
                 continue
 
-            # ------------------------------------------------
-            # PESO
-            # ------------------------------------------------
-
             try:
 
                 carga = (
@@ -3602,10 +3403,6 @@ def finalizar_treino(
 
                 carga = 0
 
-            # ------------------------------------------------
-            # REPETIÇÕES
-            # ------------------------------------------------
-
             try:
 
                 repeticoes = (
@@ -3617,10 +3414,6 @@ def finalizar_treino(
             except:
 
                 repeticoes = 0
-
-            # ------------------------------------------------
-            # GRAVAR
-            # ------------------------------------------------
 
             cursor.execute("""
                 INSERT INTO series
@@ -3642,10 +3435,6 @@ def finalizar_treino(
                 repeticoes
             ))
 
-    # ========================================================
-    # TOTAL DE EXERCÍCIOS
-    # ========================================================
-
     cursor.execute("""
         SELECT COUNT(*)
         FROM treino_exercicios
@@ -3655,10 +3444,6 @@ def finalizar_treino(
     ))
 
     total_exercicios = cursor.fetchone()[0]
-
-    # ========================================================
-    # TOTAL DE SÉRIES
-    # ========================================================
 
     cursor.execute("""
         SELECT COUNT(*)
@@ -3670,17 +3455,9 @@ def finalizar_treino(
 
     total_series = cursor.fetchone()[0]
 
-    # ========================================================
-    # SALVAR
-    # ========================================================
-
     conn.commit()
 
     conn.close()
-
-    # ========================================================
-    # TELA DE CONCLUSÃO
-    # ========================================================
 
     return render_template(
         "treino_concluido.html",
@@ -3691,7 +3468,10 @@ def finalizar_treino(
         aluno=aluno
     )
 
-# DE EXERCÍCIOS
+
+# ============================================================
+# EXERCÍCIOS
+# ============================================================
 
 @app.route("/exercicios")
 @login_obrigatorio
@@ -3702,10 +3482,6 @@ def exercicios():
 
     conn = conectar()
     cursor = conn.cursor()
-
-    # ========================================================
-    # OWNER
-    # ========================================================
 
     if usuario_e_owner():
 
@@ -3724,10 +3500,6 @@ def exercicios():
                 e.grupo_muscular,
                 e.nome
         """)
-
-    # ========================================================
-    # PERSONAL
-    # ========================================================
 
     else:
 
@@ -3760,6 +3532,8 @@ def exercicios():
         "exercicios.html",
         exercicios=exercicios_db
     )
+
+
 # ============================================================
 # NOVO EXERCÍCIO
 # ============================================================
@@ -3807,17 +3581,9 @@ def novo_exercicio():
             ""
         ).strip()
 
-        # ====================================================
-        # VALIDAR NOME
-        # ====================================================
-
         if not nome:
 
             erro = "Informe o nome do exercício."
-
-        # ====================================================
-        # VALIDAR GRUPO MUSCULAR
-        # ====================================================
 
         elif grupo_muscular not in grupos_musculares:
 
@@ -3827,10 +3593,6 @@ def novo_exercicio():
 
             conn = conectar()
             cursor = conn.cursor()
-
-            # =================================================
-            # VERIFICAR DUPLICIDADE
-            # =================================================
 
             if usuario_e_owner():
 
@@ -3873,10 +3635,6 @@ def novo_exercicio():
 
             else:
 
-                # =============================================
-                # RESPONSÁVEL
-                # =============================================
-
                 if usuario_e_owner():
 
                     responsavel_id = None
@@ -3886,10 +3644,6 @@ def novo_exercicio():
                     responsavel_id = session[
                         "usuario_id"
                     ]
-
-                # =============================================
-                # CADASTRAR
-                # =============================================
 
                 cursor.execute("""
                     INSERT INTO exercicios
@@ -3929,6 +3683,7 @@ def novo_exercicio():
         erro=erro
     )
 
+
 # ============================================================
 # EDITAR EXERCÍCIO
 # ============================================================
@@ -3960,10 +3715,6 @@ def editar_exercicio(exercicio_id):
     conn = conectar()
     cursor = conn.cursor()
 
-    # ========================================================
-    # LOCALIZAR EXERCÍCIO
-    # ========================================================
-
     cursor.execute("""
         SELECT
             id,
@@ -3984,10 +3735,6 @@ def editar_exercicio(exercicio_id):
         conn.close()
 
         return redirect("/exercicios")
-
-    # ========================================================
-    # VERIFICAR PERMISSÃO
-    # ========================================================
 
     if usuario_e_owner():
 
@@ -4010,10 +3757,6 @@ def editar_exercicio(exercicio_id):
 
     erro = None
 
-    # ========================================================
-    # SALVAR ALTERAÇÕES
-    # ========================================================
-
     if request.method == "POST":
 
         nome = request.form.get(
@@ -4031,19 +3774,11 @@ def editar_exercicio(exercicio_id):
             ""
         ).strip()
 
-        # ====================================================
-        # VALIDAR NOME
-        # ====================================================
-
         if not nome:
 
             erro = (
                 "Informe o nome do exercício."
             )
-
-        # ====================================================
-        # VALIDAR GRUPO
-        # ====================================================
 
         elif grupo_muscular not in grupos_musculares:
 
@@ -4052,10 +3787,6 @@ def editar_exercicio(exercicio_id):
             )
 
         else:
-
-            # ================================================
-            # VERIFICAR DUPLICIDADE
-            # ================================================
 
             cursor.execute("""
                 SELECT
@@ -4115,7 +3846,6 @@ def editar_exercicio(exercicio_id):
         erro=erro
     )
 
-# ============================================================
 
 # ============================================================
 # EXECUTAR
