@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>MOVYLA Training</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #111111,
+                    #242424
+                );
+
+            color: white;
+        }
+
+        .login-container {
+
+            width: 100%;
+            max-width: 400px;
+
+            padding: 35px;
+
+            background: #1c1c1c;
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 15px 40px rgba(0,0,0,0.5);
+
+        }
+
+        .logo {
+
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+
+            margin: 0;
+
+            font-size: 36px;
+
+            letter-spacing: 2px;
+
+            font-weight: 800;
+        }
+
+        .logo span {
+
+            display: block;
+
+            margin-top: 5px;
+
+            font-size: 14px;
+
+            letter-spacing: 4px;
+
+            color: #bbbbbb;
+        }
+
+        label {
+
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 14px;
+
+            color: #cccccc;
+        }
+
+        input {
+
+            width: 100%;
+
+            padding: 14px;
+
+            margin-bottom: 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #303030;
+
+            color: white;
+
+            font-size: 16px;
+
+            outline: none;
+        }
+
+        input:focus {
+
+            background: #383838;
+        }
+
+        button {
+
+            width: 100%;
+
+            padding: 15px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #ffffff;
+
+            color: #111111;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+        button:hover {
+
+            background: #dddddd;
+        }
+
+        .erro {
+
+            margin-bottom: 20px;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            background: #5c2020;
+
+            color: #ffb3b3;
+
+            text-align: center;
+
+            font-size: 14px;
+        }
+
+        .rodape {
+
+            margin-top: 25px;
+
+            text-align: center;
+
+            color: #777777;
+
+            font-size: 12px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="login-container">
+
+        <div class="logo">
+
+            <h1>MOVYLA</h1>
+
+            <span>TRAINING</span>
+
+        </div>
+
+
+        {% if mensagem %}
+
+        <div class="erro">
+
+            {{ mensagem }}
+
+        </div>
+
+        {% endif %}
+
+
+        <form method="POST">
+
+            <label for="usuario">
+                Usuário
+            </label>
+
+            <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                placeholder="Digite seu usuário"
+                required
+            >
+
+
+            <label for="senha">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="senha"
+                name="senha"
+                placeholder="Digite sua senha"
+                required
+            >
+
+
+            <button type="submit">
+
+                ENTRAR
+
+            </button>
+
+        </form>
+
+
+        <div class="rodape">
+
+            MOVYLA Training
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Novo Personal — MOVYLA Training</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+
+<style>
+    .personal-box {
+        max-width: 520px;
+        margin: 50px auto;
+    }
+
+    .personal-header {
+        margin-bottom: 30px;
+    }
+
+    .personal-label {
+        color: #198754;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .personal-header h1 {
+        margin-bottom: 8px;
+    }
+
+    .personal-header p {
+        color: #aeb7b1;
+        margin: 0;
+    }
+
+    .personal-card {
+        background: #151a17;
+        border: 1px solid #2a332e;
+        border-radius: 18px;
+        padding: 30px;
+    }
+
+    .personal-card label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .personal-card input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+
+    .btn-personal {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .erro {
+        background: rgba(220, 53, 69, 0.12);
+        border: 1px solid rgba(220, 53, 69, 0.35);
+        color: #ff8f99;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .acoes {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .acoes a {
+        text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+        .personal-box {
+            margin: 25px auto;
+        }
+
+        .personal-card {
+            padding: 22px;
+        }
+
+        .acoes {
+            flex-direction: column;
+        }
+
+        .acoes a {
+            text-align: center;
+        }
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<div class="personal-box">
+
+    <div class="personal-header">
+
+        <div class="personal-label">
+            MOVYLA
+        </div>
+
+        <h1>👤 Novo Personal</h1>
+
+        <p>
+            Cadastre um novo profissional para administrar seus próprios alunos.
+        </p>
+
+    </div>
+
+    <div class="personal-card">
+
+        {% if erro %}
+            <div class="erro">
+                {{ erro }}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+
+            <label for="nome">
+                Nome completo
+            </label>
+
+            <input
+                type="text"
+                id="nome"
+                name="nome"
+                placeholder="Ex.: João da Silva"
+                required
+            >
+
+            <label for="usuario">
+                Usuário de acesso
+            </label>
+
+            <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                placeholder="Ex.: joao.personal"
+                required
+            >
+
+            <label for="senha">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="senha"
+                name="senha"
+                placeholder="Digite uma senha"
+                required
+            >
+
+            <button
+                type="submit"
+                class="btn-personal"
+            >
+                ✓ Cadastrar Personal
+            </button>
+
+        </form>
+
+        <div class="acoes">
+
+            <a href="javascript:history.back()">
+                ← Voltar
+            </a>
+
+            <a href="{{ url_for('inicio') }}">
+                🏠 Início
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+</body>
+</html>

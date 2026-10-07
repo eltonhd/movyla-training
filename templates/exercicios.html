@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Exercícios - MOVYLA Training
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='movyla.css') }}"
+    >
+
+    <style>
+
+        .pagina-cabecalho {
+            margin-bottom: 25px;
+        }
+
+        .pagina-cabecalho h1 {
+            margin-bottom: 8px;
+        }
+
+        .pagina-cabecalho p {
+            color: var(--movyla-muted);
+        }
+
+        .barra-acoes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .lista-exercicios {
+            display: grid;
+            gap: 15px;
+        }
+
+        .exercicio-card {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .exercicio-card h2 {
+            margin: 0 0 7px 0;
+            font-size: 20px;
+        }
+
+        .grupo-muscular {
+            color: var(--movyla-green);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .youtube-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .sem-video {
+            color: var(--movyla-muted);
+            font-size: 14px;
+        }
+
+        .origem-exercicio {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid var(--movyla-border);
+            color: var(--movyla-muted);
+            font-size: 13px;
+        }
+
+        .origem-oficial {
+            color: var(--movyla-green);
+            font-weight: 600;
+        }
+
+        .vazio {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 16px;
+            padding: 35px 20px;
+            text-align: center;
+            color: var(--movyla-muted);
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================================
+         NAVEGAÇÃO
+         ===================================================== -->
+
+    <div style="margin-bottom: 20px;">
+
+        <a href="{{ url_for('inicio') }}">
+            ← Início
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         CABEÇALHO
+         ===================================================== -->
+
+    <div class="pagina-cabecalho">
+
+        <h1>
+            🏋️ Exercícios
+        </h1>
+
+        <p>
+            Biblioteca de exercícios do MOVYLA Training.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         AÇÕES
+         ===================================================== -->
+
+    <div class="barra-acoes">
+
+        <div>
+
+            <strong>
+                {{ exercicios|length }}
+            </strong>
+
+            exercício{% if exercicios|length != 1 %}s{% endif %}
+
+        </div>
+
+
+        <a
+            href="{{ url_for('novo_exercicio') }}"
+            class="btn btn-primary"
+        >
+            ＋ Novo exercício
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         LISTA DE EXERCÍCIOS
+         ===================================================== -->
+
+    {% if exercicios %}
+
+    <div class="lista-exercicios">
+
+        {% for exercicio in exercicios %}
+
+        <div class="exercicio-card">
+
+            <h2>
+                {{ exercicio["nome"] }}
+            </h2>
+
+
+            <div class="grupo-muscular">
+
+                {{ exercicio["grupo_muscular"] }}
+
+            </div>
+
+
+            {% if exercicio["video_url"] %}
+
+                <a
+                    href="{{ exercicio['video_url'] }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="youtube-link"
+                >
+                    ▶️ Assistir vídeo no YouTube
+                </a>
+
+            {% else %}
+
+                <div class="sem-video">
+
+                    ▶️ Nenhum vídeo cadastrado
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="origem-exercicio">
+
+                {% if exercicio["responsavel_id"] is none %}
+
+                    <span class="origem-oficial">
+                        ✓ Exercício oficial MOVYLA
+                    </span>
+
+                {% else %}
+
+                    Cadastrado por:
+                    <strong>
+                        {{ exercicio["responsavel_nome"] }}
+                    </strong>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="vazio">
+
+        <h2>
+            Nenhum exercício cadastrado
+        </h2>
+
+        <p>
+            Comece criando o primeiro exercício da biblioteca.
+        </p>
+
+        <a
+            href="{{ url_for('novo_exercicio') }}"
+            class="btn btn-primary"
+        >
+            ＋ Novo exercício
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Meus Alunos - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+
+    <style>
+
+        .aluno-card {
+
+            background: var(--movyla-card);
+
+            border: 1px solid var(--movyla-border);
+
+            border-radius: 18px;
+
+            padding: 22px;
+
+            margin-bottom: 20px;
+
+        }
+
+        .aluno-topo {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 16px;
+
+            margin-bottom: 18px;
+
+        }
+
+        .aluno-foto {
+
+            width: 58px;
+
+            height: 58px;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+
+            border: 2px solid var(--movyla-green);
+
+            background: var(--movyla-card-2);
+
+        }
+
+        .aluno-foto-placeholder {
+
+            width: 58px;
+
+            height: 58px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: var(--movyla-card-2);
+
+            border: 2px solid var(--movyla-green);
+
+            font-size: 25px;
+
+        }
+
+        .aluno-nome {
+
+            margin: 0;
+
+            font-size: 22px;
+
+        }
+
+        .aluno-usuario {
+
+            color: var(--movyla-muted);
+
+            margin-top: 4px;
+
+        }
+
+        .status {
+
+            display: inline-block;
+
+            margin-top: 6px;
+
+            padding: 4px 10px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+        }
+
+        .status.ativo {
+
+            background: rgba(25, 135, 84, 0.15);
+
+            color: var(--movyla-green);
+
+        }
+
+        .status.inativo {
+
+            background: rgba(220, 53, 69, 0.15);
+
+            color: var(--movyla-danger);
+
+        }
+
+        .treinos-titulo {
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            letter-spacing: .08em;
+
+            color: var(--movyla-muted);
+
+            margin-bottom: 10px;
+
+        }
+
+        .treino-item {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            background: var(--movyla-card-2);
+
+            border: 1px solid var(--movyla-border);
+
+            border-radius: 12px;
+
+            padding: 13px 15px;
+
+            margin-bottom: 8px;
+
+        }
+
+        .treino-nome {
+
+            font-weight: 700;
+
+        }
+
+        .treino-dia {
+
+            color: var(--movyla-muted);
+
+            font-size: 13px;
+
+            margin-top: 4px;
+
+        }
+
+        .sem-treino {
+
+            color: var(--movyla-muted);
+
+            padding: 12px 0;
+
+        }
+
+        .acoes-aluno {
+
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+            margin-top: 16px;
+
+        }
+
+        @media (max-width: 700px) {
+
+            .treino-item {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo"
+         style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px;">
+
+        <div>
+
+            <h1>👥 Meus alunos</h1>
+
+            <p>
+                Visualize os alunos e os treinos atribuídos a cada um.
+            </p>
+
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+            <a href="{{ url_for('aluno_novo') }}"
+               class="btn btn-primary">
+
+                ＋ Novo aluno
+
+            </a>
+
+            <a href="{{ url_for('inicio') }}"
+               class="btn btn-secondary">
+
+                ← Início
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% if alunos %}
+
+        {% for aluno in alunos %}
+
+            <div class="aluno-card">
+
+                <div class="aluno-topo">
+
+                    {% if aluno["foto"] %}
+
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='uploads/' ~ aluno['foto']
+                            ) }}"
+                            class="aluno-foto"
+                            alt="Foto de {{ aluno['nome'] }}"
+                        >
+
+                    {% else %}
+
+                        <div class="aluno-foto-placeholder">
+
+                            👤
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div>
+
+                        <h2 class="aluno-nome">
+
+                            {{ aluno["nome"] }}
+
+                        </h2>
+
+                        <div class="aluno-usuario">
+
+                            Usuário: {{ aluno["usuario"] }}
+
+                        </div>
+
+
+                        {% if aluno["ativo"] %}
+
+                            <span class="status ativo">
+
+                                Ativo
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="status inativo">
+
+                                Inativo
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <div class="treinos-titulo">
+
+                    TREINOS ATRIBUÍDOS
+
+                </div>
+
+
+                {% if aluno["treinos"] %}
+
+                    {% for treino in aluno["treinos"] %}
+
+                        <div class="treino-item">
+
+                            <div>
+
+                                <div class="treino-nome">
+
+                                    🏋️ {{ treino["treino_nome"] }}
+
+                                </div>
+
+
+                                <div class="treino-dia">
+
+                                    {% if treino["dia_semana"] == 1 %}
+
+                                        📅 Segunda-feira
+
+                                    {% elif treino["dia_semana"] == 2 %}
+
+                                        📅 Terça-feira
+
+                                    {% elif treino["dia_semana"] == 3 %}
+
+                                        📅 Quarta-feira
+
+                                    {% elif treino["dia_semana"] == 4 %}
+
+                                        📅 Quinta-feira
+
+                                    {% elif treino["dia_semana"] == 5 %}
+
+                                        📅 Sexta-feira
+
+                                    {% elif treino["dia_semana"] == 6 %}
+
+                                        📅 Sábado
+
+                                    {% else %}
+
+                                        📅 Dia não definido
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="sem-treino">
+
+                        Este aluno ainda não possui nenhum treino atribuído.
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="acoes-aluno">
+
+                    <a
+                        href="{{ url_for(
+                            'aluno_treinos',
+                            aluno_id=aluno['id']
+                        ) }}"
+                        class="btn btn-primary">
+
+                        ⚙️ Gerenciar treinos do aluno
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="card">
+
+            <p>
+
+                Nenhum aluno cadastrado.
+
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+
+</html>

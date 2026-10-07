@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{{ treino["nome"] }} - MOVYLA Training</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='movyla.css') }}">
+
+    <style>
+
+        .pagina-treino {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .topo-treino {
+            margin-bottom: 25px;
+        }
+
+        .marca-treino {
+            color: var(--movyla-green);
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .card-exercicio {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        }
+
+        .numero-exercicio {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--movyla-green);
+            color: white;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .nome-exercicio {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+
+        .info-exercicio {
+            color: var(--movyla-muted);
+            margin-bottom: 20px;
+        }
+
+        .tabela-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .tabela-treino {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 760px;
+        }
+
+        .tabela-treino th {
+            background: var(--movyla-card-2);
+            color: var(--movyla-muted);
+            font-size: 13px;
+            padding: 13px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--movyla-border);
+        }
+
+        .tabela-treino td {
+            padding: 14px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--movyla-border);
+        }
+
+        .tabela-treino tr:last-child td {
+            border-bottom: none;
+        }
+
+        .serie-numero {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .reps-previstas {
+            font-weight: bold;
+            color: var(--movyla-text);
+            font-size: 17px;
+        }
+
+        .historico {
+            color: var(--movyla-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .sugestao {
+            font-weight: bold;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .sugestao-aumentar {
+            color: var(--movyla-green);
+        }
+
+        .sugestao-manter {
+            color: var(--movyla-warning);
+        }
+
+        .sugestao-reduzir {
+            color: var(--movyla-danger);
+        }
+
+        .sem-historico {
+            color: var(--movyla-muted);
+            font-size: 14px;
+        }
+
+        .campo-treino {
+            width: 110px;
+            min-height: 52px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 2px solid var(--movyla-border);
+            background: #0d100f;
+            color: var(--movyla-text);
+            text-align: center;
+            font-size: 19px;
+            font-weight: bold;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .campo-treino:focus {
+            border-color: var(--movyla-green);
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.18);
+        }
+
+        .campo-treino::placeholder {
+            color: #68716b;
+            font-weight: normal;
+        }
+
+        .acoes-treino {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .botao-salvar {
+            min-height: 52px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            background: var(--movyla-green);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .botao-salvar:hover {
+            background: var(--movyla-green-dark);
+        }
+
+        .botao-voltar {
+            min-height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--movyla-border);
+            background: var(--movyla-card);
+            color: var(--movyla-text);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .botao-voltar:hover {
+            background: var(--movyla-card-2);
+        }
+
+        .botao-video {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            background: var(--movyla-card-2);
+            border: 1px solid var(--movyla-border);
+            color: var(--movyla-text);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .botao-video:hover {
+            border-color: var(--movyla-green);
+        }
+
+        .cabecalho-meta {
+            color: var(--movyla-muted);
+        }
+
+        .cabecalho-proxima {
+            color: var(--movyla-green);
+            font-weight: bold;
+        }
+
+        .texto-proxima {
+            display: block;
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--movyla-muted);
+            margin-bottom: 3px;
+        }
+
+        @media (max-width: 700px) {
+
+            .card-exercicio {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .nome-exercicio {
+                font-size: 21px;
+            }
+
+            .tabela-treino {
+                min-width: 700px;
+            }
+
+            .campo-treino {
+                width: 100px;
+                min-height: 56px;
+                font-size: 20px;
+            }
+
+            .tabela-treino th {
+                font-size: 12px;
+                padding: 11px 8px;
+            }
+
+            .tabela-treino td {
+                padding: 12px 8px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container pagina-treino">
+
+    <div class="topo-treino">
+
+        <a href="/treinos"
+           class="botao-voltar">
+            ← Voltar
+        </a>
+
+        <div style="margin-top: 25px;">
+
+            <div class="marca-treino">
+                💪 MOVYLA TRAINING
+            </div>
+
+            <h1>
+                {{ treino["nome"] }}
+            </h1>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST"
+          action="{{ url_for(
+              'finalizar_treino',
+              aluno_id=aluno_id,
+              treino_id=treino['id']
+          ) }}">
+
+
+        {% for exercicio in exercicios %}
+
+        <div class="card-exercicio">
+
+
+            <h2 class="nome-exercicio">
+
+                <span class="numero-exercicio">
+                    {{ loop.index }}
+                </span>
+
+                {{ exercicio["nome"] }}
+
+            </h2>
+
+
+            <div class="info-exercicio">
+
+                {{ exercicio["grupo_muscular"] }}
+
+                {% if exercicio["equipamento"] %}
+                    • {{ exercicio["equipamento"] }}
+                {% endif %}
+
+            </div>
+
+
+            {% if exercicio["video_url"] %}
+
+                <a href="{{ exercicio['video_url'] }}"
+                   target="_blank"
+                   class="botao-video">
+
+                    ▶ Ver vídeo do exercício
+
+                </a>
+
+            {% endif %}
+
+
+            <div class="tabela-container">
+
+                <table class="tabela-treino">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Série</th>
+
+                            <th class="cabecalho-meta">
+                                🎯 Meta
+                            </th>
+
+                            <th>
+                                Último treino
+                            </th>
+
+                            <th class="cabecalho-proxima">
+
+                                <span class="texto-proxima">
+                                    Próxima sessão
+                                </span>
+
+                                Sugestão
+
+                            </th>
+
+                            <th>
+                                Peso hoje (kg)
+                            </th>
+
+                            <th>
+                                Reps hoje
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% for prescricao in exercicio["series"] %}
+
+                        {% set numero = prescricao["numero_serie"] %}
+
+                        {% set reps_previstas = prescricao["repeticoes_prescritas"] %}
+
+
+                        {% set ns = namespace(
+                            ultimo_peso=none,
+                            ultima_reps=none
+                        ) %}
+
+
+                        {% for item in exercicio["historico"]["series"] %}
+
+                            {% if item["numero_serie"] == numero %}
+
+                                {% set ns.ultimo_peso = item["carga"] %}
+
+                                {% set ns.ultima_reps = item["repeticoes"] %}
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        {% set sugestao_ns = namespace(
+                            valor=none,
+                            tipo=none
+                        ) %}
+
+
+                        {% for sugestao in exercicio["sugestoes"] %}
+
+                            {% if sugestao["numero_serie"] == numero %}
+
+                                {% set sugestao_ns.valor = sugestao["carga_sugerida"] %}
+
+                                {% set sugestao_ns.tipo = sugestao["tipo"] %}
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        <tr>
+
+
+                            <td class="serie-numero">
+
+                                {{ numero }}
+
+                            </td>
+
+
+                            <td class="reps-previstas">
+
+                                {{ reps_previstas }} reps
+
+                            </td>
+
+
+                            <td class="historico">
+
+
+                                {% if ns.ultimo_peso is not none
+                                      and ns.ultima_reps is not none %}
+
+
+                                    {{ ns.ultimo_peso|float|round(1) }} kg
+                                    ×
+                                    {{ ns.ultima_reps }} reps
+
+
+                                    <br>
+
+
+                                    {{ exercicio["historico"]["data"]|default("") }}
+
+
+                                {% else %}
+
+
+                                    <span class="sem-historico">
+                                        —
+                                    </span>
+
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            <td class="sugestao">
+
+
+                                {% if sugestao_ns.valor is not none %}
+
+
+                                    {% if sugestao_ns.tipo == "aumentar" %}
+
+
+                                        <span class="sugestao-aumentar">
+
+                                            ↑ {{ sugestao_ns.valor|float|round(1) }} kg
+
+                                        </span>
+
+
+                                    {% elif sugestao_ns.tipo == "manter" %}
+
+
+                                        <span class="sugestao-manter">
+
+                                            → {{ sugestao_ns.valor|float|round(1) }} kg
+
+                                        </span>
+
+
+                                    {% elif sugestao_ns.tipo == "reduzir" %}
+
+
+                                        <span class="sugestao-reduzir">
+
+                                            ↓ {{ sugestao_ns.valor|float|round(1) }} kg
+
+                                        </span>
+
+
+                                    {% else %}
+
+
+                                        {{ sugestao_ns.valor|float|round(1) }} kg
+
+
+                                    {% endif %}
+
+
+                                {% else %}
+
+
+                                    <span class="sem-historico">
+
+                                        Sem histórico
+
+                                    </span>
+
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            <td>
+
+
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    min="0"
+                                    inputmode="decimal"
+                                    class="campo-treino"
+                                    name="peso_{{ exercicio['treino_exercicio_id'] }}_{{ numero }}"
+                                    placeholder="kg"
+                                >
+
+
+                            </td>
+
+
+                            <td>
+
+
+                                <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    inputmode="numeric"
+                                    class="campo-treino"
+                                    name="reps_{{ exercicio['treino_exercicio_id'] }}_{{ numero }}"
+                                    placeholder="reps"
+                                >
+
+
+                            </td>
+
+
+                        </tr>
+
+
+                    {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+
+        <div class="acoes-treino">
+
+
+            <button type="submit"
+                    class="botao-salvar">
+
+                💾 Salvar treino
+
+            </button>
+
+
+            <a href="/treinos"
+               class="botao-voltar">
+
+                ← Cancelar / Voltar
+
+            </a>
+
+
+        </div>
+
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

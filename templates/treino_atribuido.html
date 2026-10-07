@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Treino atribuído - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+
+    <style>
+
+        .sucesso-container {
+
+            min-height: 70vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 30px 15px;
+
+        }
+
+        .sucesso-card {
+
+            width: 100%;
+
+            max-width: 520px;
+
+            background: var(--movyla-card);
+
+            border: 1px solid var(--movyla-border);
+
+            border-radius: 22px;
+
+            padding: 40px 30px;
+
+            text-align: center;
+
+            box-shadow: 0 20px 50px rgba(0,0,0,.25);
+
+        }
+
+        .sucesso-icone {
+
+            width: 76px;
+
+            height: 76px;
+
+            margin: 0 auto 20px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: rgba(25, 135, 84, .15);
+
+            border: 2px solid var(--movyla-green);
+
+            color: var(--movyla-green);
+
+            font-size: 38px;
+
+            font-weight: 800;
+
+        }
+
+        .sucesso-card h1 {
+
+            margin-bottom: 10px;
+
+        }
+
+        .sucesso-card p {
+
+            color: var(--movyla-muted);
+
+            margin: 8px 0;
+
+        }
+
+        .dados-treino {
+
+            margin: 25px 0;
+
+            padding: 18px;
+
+            background: var(--movyla-card-2);
+
+            border: 1px solid var(--movyla-border);
+
+            border-radius: 14px;
+
+        }
+
+        .dados-treino strong {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            font-size: 18px;
+
+        }
+
+        .botao-ok {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 150px;
+
+            padding: 13px 25px;
+
+            border-radius: 10px;
+
+            background: var(--movyla-green);
+
+            color: white;
+
+            text-decoration: none;
+
+            font-weight: 800;
+
+            border: none;
+
+        }
+
+        .botao-ok:hover {
+
+            background: var(--movyla-green-dark);
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="sucesso-container">
+
+        <div class="sucesso-card">
+
+            <div class="sucesso-icone">
+
+                ✓
+
+            </div>
+
+            <h1>
+
+                Treino atribuído com sucesso!
+
+            </h1>
+
+            <p>
+
+                O treino foi atribuído ao aluno corretamente.
+
+            </p>
+
+            <div class="dados-treino">
+
+                <strong>
+
+                    🏋️ {{ treino["nome"] }}
+
+                </strong>
+
+                <p>
+
+                    👤 Aluno: {{ aluno["nome"] }}
+
+                </p>
+
+                <p>
+
+                    {% if dia_semana == 1 %}
+                        📅 Segunda-feira
+                    {% elif dia_semana == 2 %}
+                        📅 Terça-feira
+                    {% elif dia_semana == 3 %}
+                        📅 Quarta-feira
+                    {% elif dia_semana == 4 %}
+                        📅 Quinta-feira
+                    {% elif dia_semana == 5 %}
+                        📅 Sexta-feira
+                    {% elif dia_semana == 6 %}
+                        📅 Sábado
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for(
+                    'aluno_treinos',
+                    aluno_id=aluno['id']
+                ) }}"
+                class="botao-ok">
+
+                OK
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

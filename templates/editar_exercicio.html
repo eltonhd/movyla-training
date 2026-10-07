@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Editar Exercício - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo-pagina">
+
+        <div>
+
+            <h1>✏️ Editar exercício</h1>
+
+            <p class="texto-muted">
+                Atualize as informações deste exercício.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('exercicios') }}"
+            class="btn btn-secondary"
+        >
+            ← Voltar
+        </a>
+
+    </div>
+
+
+    {% if erro %}
+
+    <div
+        class="alert alert-danger"
+        style="
+            margin-top: 20px;
+            border-radius: 12px;
+            padding: 16px;
+        "
+    >
+
+        ⚠️ {{ erro }}
+
+    </div>
+
+    {% endif %}
+
+
+    <div
+        class="card"
+        style="
+            max-width: 700px;
+            margin: 30px auto;
+        "
+    >
+
+        <form method="POST">
+
+            <div class="form-group">
+
+                <label for="nome">
+                    Nome do exercício
+                </label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    value="{{ request.form.get('nome', exercicio['nome']) }}"
+                    required
+                    autofocus
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="grupo_muscular">
+                    Grupo muscular
+                </label>
+
+                <select
+                    id="grupo_muscular"
+                    name="grupo_muscular"
+                    required
+                >
+
+                    <option value="">
+                        Selecione o grupo muscular
+                    </option>
+
+                    {% for grupo in grupos_musculares %}
+
+                    <option
+                        value="{{ grupo }}"
+                        {% if request.form.get('grupo_muscular', exercicio['grupo_muscular']) == grupo %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ grupo }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="video_url">
+
+                    🎥 Vídeo demonstrativo no YouTube
+
+                    <span class="texto-muted">
+                        (opcional)
+                    </span>
+
+                </label>
+
+                <input
+                    type="url"
+                    id="video_url"
+                    name="video_url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value="{{ request.form.get('video_url', exercicio['video_url'] or '') }}"
+                >
+
+                <small
+                    class="texto-muted"
+                    style="
+                        display: block;
+                        margin-top: 8px;
+                    "
+                >
+
+                    O aluno poderá acessar este vídeo
+                    diretamente na tela do treino.
+
+                </small>
+
+            </div>
+
+
+            <div
+                style="
+                    display: flex;
+                    gap: 12px;
+                    margin-top: 30px;
+                    flex-wrap: wrap;
+                "
+            >
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    💾 Salvar alterações
+                </button>
+
+                <a
+                    href="{{ url_for('exercicios') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancelar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

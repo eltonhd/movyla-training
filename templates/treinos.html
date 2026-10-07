@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meus Treinos - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ====================================================== -->
+    <!-- CABEÇALHO -->
+    <!-- ====================================================== -->
+
+    <div class="topo">
+
+        <div>
+            <h1>🏋️ Meus treinos</h1>
+
+            <p class="texto-muted">
+                Crie, organize e acompanhe seus programas de treinamento.
+            </p>
+        </div>
+
+        {% if session.get("tipo") in ["master", "personal"] %}
+
+        <a href="{{ url_for('novo_treino') }}"
+           class="btn btn-primary">
+            ＋ Novo treino
+        </a>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- MENSAGENS -->
+    <!-- ====================================================== -->
+
+    {% if erro %}
+
+    <div class="alert alert-danger">
+        {{ erro }}
+    </div>
+
+    {% endif %}
+
+
+    {% if sucesso %}
+
+    <div class="alert alert-success">
+        {{ sucesso }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- ====================================================== -->
+    <!-- RESUMO -->
+    <!-- ====================================================== -->
+
+    <div class="card">
+
+        <h2>Meus programas</h2>
+
+        <p class="texto-muted">
+
+            {% if treinos %}
+
+                {{ treinos|length }} treino{% if treinos|length != 1 %}s{% endif %}
+
+            {% else %}
+
+                Nenhum treino cadastrado.
+
+            {% endif %}
+
+        </p>
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- LISTA DE TREINOS -->
+    <!-- ====================================================== -->
+
+    {% if treinos %}
+
+        <div class="grid">
+
+            {% for treino in treinos %}
+
+            <div class="card">
+
+                <!-- ================================================== -->
+                <!-- ÍCONE -->
+                <!-- ================================================== -->
+
+                <div style="
+                    font-size: 38px;
+                    margin-bottom: 12px;
+                ">
+                    🏋️
+                </div>
+
+
+                <!-- ================================================== -->
+                <!-- NOME -->
+                <!-- ================================================== -->
+
+                <h2>
+                    {{ treino["nome"] }}
+                </h2>
+
+
+                <!-- ================================================== -->
+                <!-- DESCRIÇÃO -->
+                <!-- ================================================== -->
+
+                {% if treino["descricao"] %}
+
+                <p class="texto-muted">
+                    {{ treino["descricao"] }}
+                </p>
+
+                {% else %}
+
+                <p class="texto-muted">
+                    Programa de treinamento MOVYLA
+                </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- DIA DA SEMANA -->
+                <!-- ================================================== -->
+
+                {% if session.get("tipo") == "aluno" and treino["dia_semana"] %}
+
+                    <div style="
+                        margin-top: 10px;
+                        margin-bottom: 10px;
+                    ">
+
+                        <strong>
+                            📅
+
+                            {% if treino["dia_semana"] == 1 %}
+                                Segunda-feira
+
+                            {% elif treino["dia_semana"] == 2 %}
+                                Terça-feira
+
+                            {% elif treino["dia_semana"] == 3 %}
+                                Quarta-feira
+
+                            {% elif treino["dia_semana"] == 4 %}
+                                Quinta-feira
+
+                            {% elif treino["dia_semana"] == 5 %}
+                                Sexta-feira
+
+                            {% elif treino["dia_semana"] == 6 %}
+                                Sábado
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- TIPO -->
+                <!-- ================================================== -->
+
+                <div style="
+                    margin-top: 14px;
+                    margin-bottom: 14px;
+                ">
+
+                    <span class="badge">
+                        MEU TREINO
+                    </span>
+
+                </div>
+
+
+                <!-- ================================================== -->
+                <!-- QUANTIDADE DE EXERCÍCIOS -->
+                <!-- ================================================== -->
+
+                <div style="
+                    margin-top: 12px;
+                    margin-bottom: 18px;
+                    font-size: 16px;
+                ">
+
+                    💪
+
+                    <strong>
+                        {{ treino["total_exercicios"] }}
+                    </strong>
+
+                    exercício{% if treino["total_exercicios"] != 1 %}s{% endif %}
+
+                </div>
+
+
+                <!-- ================================================== -->
+                <!-- MARCA -->
+                <!-- ================================================== -->
+
+                <div style="
+                    margin-top: 12px;
+                    margin-bottom: 18px;
+                    font-weight: 600;
+                ">
+
+                    🏋️ MOVYLA Training
+
+                </div>
+
+
+                <!-- ================================================== -->
+                <!-- BOTÕES -->
+                <!-- ================================================== -->
+
+                <div style="
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                ">
+
+
+                    <!-- ================================================== -->
+                    <!-- EDITAR - OWNER / PERSONAL -->
+                    <!-- ================================================== -->
+
+                    {% if session.get("tipo") in ["master", "personal"] %}
+
+                        <a href="{{ url_for(
+                            'editar_treino',
+                            treino_id=treino['id']
+                        ) }}"
+                           class="btn btn-primary">
+
+                            ✏️ Editar treino
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <!-- ================================================== -->
+                    <!-- INICIAR - ALUNO -->
+                    <!-- ================================================== -->
+
+                    {% if session.get("tipo") == "aluno" %}
+
+                        <a href="{{ url_for(
+                            'iniciar_treino',
+                            aluno_id=session.get('usuario_id'),
+                            treino_id=treino['id']
+                        ) }}"
+                           class="btn btn-secondary">
+
+                            ▶ Iniciar treino
+
+                        </a>
+
+                    {% endif %}
+
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+
+        <!-- ================================================== -->
+        <!-- ESTADO VAZIO -->
+        <!-- ================================================== -->
+
+        <div class="card">
+
+            <h2>🏋️ Nenhum treino encontrado</h2>
+
+            <p class="texto-muted">
+                Você ainda não possui nenhum programa de treinamento.
+            </p>
+
+
+            {% if session.get("tipo") in ["master", "personal"] %}
+
+            <a href="{{ url_for('novo_treino') }}"
+               class="btn btn-primary">
+
+                ＋ Criar primeiro treino
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- ====================================================== -->
+    <!-- RODAPÉ -->
+    <!-- ====================================================== -->
+
+    <div style="
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    ">
+
+        <a href="{{ url_for('inicio') }}"
+           class="btn btn-secondary">
+
+            ← Voltar para o início
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

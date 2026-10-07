@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Novo Treino - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+
+    <style>
+        .topo {
+            margin-bottom: 20px;
+        }
+
+        .formulario {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--movyla-text);
+        }
+
+        .campo small {
+            display: block;
+            margin-top: 7px;
+            color: var(--movyla-muted);
+            font-size: 13px;
+        }
+
+        .campo input,
+        .campo textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            border: 1px solid var(--movyla-border);
+            border-radius: 10px;
+            background: var(--movyla-dark);
+            color: var(--movyla-text);
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .campo textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .campo input:focus,
+        .campo textarea:focus {
+            outline: none;
+            border-color: var(--movyla-green);
+        }
+
+        .aviso {
+            background: rgba(25, 135, 84, 0.10);
+            border: 1px solid rgba(25, 135, 84, 0.25);
+            color: var(--movyla-muted);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .aviso strong {
+            color: #72d89f;
+        }
+
+        .botao {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .voltar {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--movyla-muted);
+            text-decoration: none;
+        }
+
+        .voltar:hover {
+            color: var(--movyla-green);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topo">
+
+        <h1>🏋️ Novo Treino</h1>
+
+        <p>
+            Crie o modelo do treino que será utilizado
+            pelos seus alunos.
+        </p>
+
+    </div>
+
+
+    <form class="formulario" method="POST">
+
+
+        <div class="campo">
+
+            <label for="nome">
+                Nome do treino
+            </label>
+
+            <input
+                type="text"
+                id="nome"
+                name="nome"
+                placeholder="Ex.: Treino A - Peito e Tríceps"
+                required
+            >
+
+        </div>
+
+
+        <div class="campo">
+
+            <label for="descricao">
+                Descrição
+            </label>
+
+            <textarea
+                id="descricao"
+                name="descricao"
+                placeholder="Ex.: Treino focado em peito e tríceps."
+            ></textarea>
+
+            <small>
+                Uma breve descrição para identificar o objetivo do treino.
+            </small>
+
+        </div>
+
+
+        <div class="aviso">
+
+            <strong>📅 O dia da semana será definido depois.</strong>
+
+            <br>
+
+            O mesmo treino poderá ser atribuído para alunos diferentes
+            em dias diferentes.
+
+        </div>
+
+
+        <button type="submit" class="botao">
+            ✓ CRIAR TREINO
+        </button>
+
+    </form>
+
+
+    <a href="{{ url_for('treinos') }}" class="voltar">
+        ← Voltar para treinos
+    </a>
+
+</div>
+
+</body>
+
+</html>

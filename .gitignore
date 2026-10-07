@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+meutreino.db
+*.db-journal
+.env
+app_backup_*.py
+app_atual.txt
+templates/*_backup*.html

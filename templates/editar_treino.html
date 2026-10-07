@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Editar treino - MOVYLA Training
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='movyla.css') }}"
+    >
+
+    <style>
+
+        .pagina-titulo {
+            margin-bottom: 8px;
+        }
+
+        .pagina-subtitulo {
+            color: var(--movyla-muted);
+            margin-bottom: 25px;
+        }
+
+        /* =====================================================
+           ADICIONAR EXERCÍCIO
+           ===================================================== */
+
+        .adicionar-exercicio-card {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 25px;
+        }
+
+        .adicionar-exercicio-card h2 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .adicionar-exercicio-card p {
+            color: var(--movyla-muted);
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+
+        .adicionar-form {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .adicionar-form .campo-exercicio {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .adicionar-form label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .adicionar-form select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-adicionar {
+            min-height: 46px;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           EXERCÍCIOS
+           ===================================================== */
+
+        .exercicio-card {
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .exercicio-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .exercicio-numero {
+            color: var(--movyla-green);
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .exercicio-nome {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .exercicio-detalhes {
+            color: var(--movyla-muted);
+            margin-top: 6px;
+        }
+
+        .video-indicador {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(25, 135, 84, 0.12);
+            color: var(--movyla-green);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* =====================================================
+           CONFIGURAÇÕES
+           ===================================================== */
+
+        .configuracoes {
+            display: grid;
+            grid-template-columns:
+                minmax(180px, 1fr)
+                minmax(150px, 220px);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .campo select,
+        .campo input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* =====================================================
+           SÉRIES
+           ===================================================== */
+
+        .series-titulo {
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .serie-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--movyla-card-2);
+            border: 1px solid var(--movyla-border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .serie-numero {
+            min-width: 75px;
+            font-weight: 700;
+        }
+
+        .serie-item input {
+            width: 120px;
+        }
+
+        .btn-remover-serie {
+            margin-left: auto;
+            background: transparent;
+            border: 1px solid var(--movyla-danger);
+            color: var(--movyla-danger);
+        }
+
+        .btn-remover-serie:hover {
+            background: var(--movyla-danger);
+            color: white;
+        }
+
+        .acoes-exercicio {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-serie {
+            background: transparent;
+            border: 1px solid var(--movyla-green);
+            color: var(--movyla-green);
+        }
+
+        .btn-serie:hover {
+            background: var(--movyla-green);
+            color: white;
+        }
+
+        /* =====================================================
+           BOTÕES FINAIS
+           ===================================================== */
+
+        .acoes-finais {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* =====================================================
+           MODAL
+           ===================================================== */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 430px;
+            background: var(--movyla-card);
+            border: 1px solid var(--movyla-border);
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            text-align: center;
+        }
+
+        .modal-icone {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .modal-box h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .modal-box p {
+            color: var(--movyla-muted);
+            line-height: 1.5;
+            margin-bottom: 22px;
+        }
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .configuracoes {
+                grid-template-columns: 1fr;
+            }
+
+            .exercicio-topo {
+                flex-direction: column;
+            }
+
+            .serie-item {
+                flex-wrap: wrap;
+            }
+
+            .serie-numero {
+                width: 100%;
+            }
+
+            .serie-item input {
+                width: 100%;
+            }
+
+            .btn-remover-serie {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .adicionar-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .adicionar-form .campo-exercicio {
+                width: 100%;
+            }
+
+            .btn-adicionar {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================================
+         CABEÇALHO
+         ===================================================== -->
+
+    <div style="margin-bottom: 20px;">
+
+        <a href="{{ url_for('treinos') }}">
+            ← Voltar para treinos
+        </a>
+
+    </div>
+
+
+    <h1 class="pagina-titulo">
+        ✏️ Editar treino
+    </h1>
+
+    <div class="pagina-subtitulo">
+
+        <strong>
+            {{ treino["nome"] }}
+        </strong>
+
+        {% if treino["descricao"] %}
+            <br>
+            {{ treino["descricao"] }}
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         ADICIONAR EXERCÍCIO
+         ===================================================== -->
+
+    {% if exercicios_disponiveis %}
+
+    <div class="adicionar-exercicio-card">
+
+        <h2>
+            ＋ Adicionar exercício
+        </h2>
+
+        <p>
+            Escolha um exercício para adicionar a este treino.
+        </p>
+
+        <form
+            method="POST"
+            class="adicionar-form"
+        >
+
+            <div class="campo-exercicio">
+
+                <label for="adicionar_exercicio_id">
+                    Exercício
+                </label>
+
+                <select
+                    name="adicionar_exercicio_id"
+                    id="adicionar_exercicio_id"
+                    required
+                >
+
+                    <option value="">
+                        Selecione um exercício
+                    </option>
+
+                    {% for exercicio in exercicios_disponiveis %}
+
+                    <option value="{{ exercicio['id'] }}">
+
+                        {{ exercicio['nome'] }}
+
+                        {% if exercicio['grupo_muscular'] %}
+                            — {{ exercicio['grupo_muscular'] }}
+                        {% endif %}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-adicionar"
+            >
+                ＋ Adicionar exercício
+            </button>
+
+        </form>
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-success">
+
+        ✓ Todos os exercícios cadastrados já estão neste treino.
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         FORMULÁRIO PRINCIPAL
+         ===================================================== -->
+
+    <form
+        method="POST"
+        id="form-editar-treino"
+    >
+
+        {% if exercicios %}
+
+            {% for exercicio in exercicios %}
+
+            <div
+                class="exercicio-card"
+                data-exercicio-id="{{ exercicio['id'] }}"
+            >
+
+                <!-- =================================================
+                     TOPO DO EXERCÍCIO
+                     ================================================= -->
+
+                <div class="exercicio-topo">
+
+                    <div>
+
+                        <div class="exercicio-numero">
+
+                            EXERCÍCIO {{ loop.index }}
+
+                        </div>
+
+                        <h2 class="exercicio-nome">
+
+                            {{ exercicio["nome"] }}
+
+                        </h2>
+
+                        <div class="exercicio-detalhes">
+
+                            {% if exercicio["grupo_muscular"] %}
+                                {{ exercicio["grupo_muscular"] }}
+                            {% endif %}
+
+                            {% if exercicio["equipamento"] %}
+                                • {{ exercicio["equipamento"] }}
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if exercicio["video_url"] %}
+
+                        <div class="video-indicador">
+
+                            ▶ Vídeo explicativo cadastrado
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     CONFIGURAÇÕES
+                     ================================================= -->
+
+                <div class="configuracoes">
+
+                    <div class="campo">
+
+                        <label>
+                            Progressão
+                        </label>
+
+                        <select
+                            name="progressao_{{ exercicio['id'] }}"
+                        >
+
+                            <option
+                                value="automatica"
+                                {% if exercicio["progressao"] == "automatica" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Automática
+                            </option>
+
+                            <option
+                                value="manter"
+                                {% if exercicio["progressao"] == "manter" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Manter
+                            </option>
+
+                            <option
+                                value="aumentar"
+                                {% if exercicio["progressao"] == "aumentar" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Aumentar
+                            </option>
+
+                            <option
+                                value="reduzir"
+                                {% if exercicio["progressao"] == "reduzir" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Reduzir
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Incremento (kg)
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            name="incremento_{{ exercicio['id'] }}"
+                            value="{{ exercicio['incremento'] }}"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SÉRIES
+                     ================================================= -->
+
+                <h3 class="series-titulo">
+                    🎯 Repetições por série
+                </h3>
+
+
+                <div
+                    class="lista-series"
+                    data-exercicio-id="{{ exercicio['id'] }}"
+                >
+
+                    {% set series =
+                        series_prescritas.get(
+                            exercicio['id'],
+                            []
+                        )
+                    %}
+
+
+                    {% if series %}
+
+                        {% for serie in series %}
+
+                        <div class="serie-item">
+
+                            <div class="serie-numero">
+                                Série {{ loop.index }}
+                            </div>
+
+                            <input
+                                type="number"
+                                min="1"
+                                name="reps_{{ exercicio['id'] }}_{{ loop.index }}"
+                                value="{{ serie['repeticoes_prescritas'] or 10 }}"
+                                required
+                            >
+
+                            <span>
+                                repetições
+                            </span>
+
+                            <button
+                                type="button"
+                                class="btn btn-remover-serie"
+                                onclick="removerSerie(this)"
+                            >
+                                🗑 Remover
+                            </button>
+
+                        </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="serie-item">
+
+                            <div class="serie-numero">
+                                Série 1
+                            </div>
+
+                            <input
+                                type="number"
+                                min="1"
+                                name="reps_{{ exercicio['id'] }}_1"
+                                value="10"
+                                required
+                            >
+
+                            <span>
+                                repetições
+                            </span>
+
+                            <button
+                                type="button"
+                                class="btn btn-remover-serie"
+                                onclick="removerSerie(this)"
+                            >
+                                🗑 Remover
+                            </button>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- =================================================
+                     AÇÕES DAS SÉRIES
+                     ================================================= -->
+
+                <div class="acoes-exercicio">
+
+                    <button
+                        type="button"
+                        class="btn btn-serie"
+                        onclick="adicionarSerie(
+                            {{ exercicio['id'] }}
+                        )"
+                    >
+                        ＋ Adicionar série
+                    </button>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="alert alert-warning">
+
+                Este treino ainda não possui exercícios.
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             AÇÕES FINAIS
+             ===================================================== -->
+
+        <div class="acoes-finais">
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                💾 Salvar alterações
+            </button>
+
+            <a
+                href="{{ url_for('treinos') }}"
+                class="btn btn-secondary"
+            >
+                Cancelar
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL DE ERRO
+     ========================================================= -->
+
+{% if erro %}
+
+<div
+    class="modal-overlay"
+    id="modalErro"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-icone">
+            ⚠️
+        </div>
+
+        <h2>
+            Atenção
+        </h2>
+
+        <p>
+            {{ erro }}
+        </p>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="fecharMensagem()"
+        >
+            OK
+        </button>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<script>
+
+/* ============================================================
+   ADICIONAR SÉRIE
+   ============================================================ */
+
+function adicionarSerie(exercicioId) {
+
+    const lista = document.querySelector(
+        '.lista-series[data-exercicio-id="' +
+        exercicioId +
+        '"]'
+    );
+
+    if (!lista) {
+        return;
+    }
+
+    const quantidadeAtual =
+        lista.querySelectorAll(
+            ".serie-item"
+        ).length;
+
+    const numeroSerie =
+        quantidadeAtual + 1;
+
+    const item =
+        document.createElement("div");
+
+    item.className = "serie-item";
+
+    item.innerHTML = `
+
+        <div class="serie-numero">
+            Série ${numeroSerie}
+        </div>
+
+        <input
+            type="number"
+            min="1"
+            name="reps_${exercicioId}_${numeroSerie}"
+            value="10"
+            required
+        >
+
+        <span>
+            repetições
+        </span>
+
+        <button
+            type="button"
+            class="btn btn-remover-serie"
+            onclick="removerSerie(this)"
+        >
+            🗑 Remover
+        </button>
+
+    `;
+
+    lista.appendChild(item);
+
+}
+
+
+/* ============================================================
+   REMOVER SÉRIE
+   ============================================================ */
+
+function removerSerie(botao) {
+
+    const item =
+        botao.closest(".serie-item");
+
+    if (!item) {
+        return;
+    }
+
+    const lista =
+        item.closest(".lista-series");
+
+    if (!lista) {
+        return;
+    }
+
+    const quantidadeAtual =
+        lista.querySelectorAll(
+            ".serie-item"
+        ).length;
+
+    if (quantidadeAtual <= 1) {
+
+        alert(
+            "O exercício precisa ter pelo menos uma série."
+        );
+
+        return;
+    }
+
+    item.remove();
+
+    renumerarSeries(lista);
+
+}
+
+
+/* ============================================================
+   RENUMERAR SÉRIES
+   ============================================================ */
+
+function renumerarSeries(lista) {
+
+    const exercicioId =
+        lista.dataset.exercicioId;
+
+    const itens =
+        lista.querySelectorAll(
+            ".serie-item"
+        );
+
+    itens.forEach(
+        function(item, index) {
+
+            const numero =
+                index + 1;
+
+            const numeroElemento =
+                item.querySelector(
+                    ".serie-numero"
+                );
+
+            if (numeroElemento) {
+
+                numeroElemento.textContent =
+                    "Série " + numero;
+
+            }
+
+            const input =
+                item.querySelector(
+                    "input"
+                );
+
+            if (input) {
+
+                input.name =
+                    "reps_" +
+                    exercicioId +
+                    "_" +
+                    numero;
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   FECHAR MODAL
+   ============================================================ */
+
+function fecharMensagem() {
+
+    const modal =
+        document.getElementById(
+            "modalErro"
+        );
+
+    if (modal) {
+
+        modal.remove();
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

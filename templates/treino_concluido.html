@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Treino concluído - MOVYLA Training</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='movyla.css') }}"
+    >
+
+    <style>
+
+        .conclusao-page {
+            min-height: 75vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .conclusao-card {
+            width: 100%;
+            max-width: 680px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(25, 135, 84, 0.16),
+                    rgba(21, 26, 23, 0.98) 48%
+                );
+
+            border: 1px solid var(--movyla-border);
+            border-radius: 28px;
+
+            padding: 50px 35px;
+
+            text-align: center;
+
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.40);
+        }
+
+        .conclusao-icone {
+            width: 105px;
+            height: 105px;
+
+            margin: 0 auto 28px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background:
+                rgba(25, 135, 84, 0.15);
+
+            border: 2px solid var(--movyla-green);
+
+            font-size: 50px;
+            font-weight: 800;
+
+            color: var(--movyla-green);
+
+            box-shadow:
+                0 0 0 10px rgba(25, 135, 84, 0.06),
+                0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .conclusao-label {
+            display: inline-block;
+
+            color: var(--movyla-green);
+
+            font-size: 13px;
+            font-weight: 800;
+
+            letter-spacing: 2px;
+            text-transform: uppercase;
+
+            margin-bottom: 12px;
+        }
+
+        .conclusao-titulo {
+            margin: 0;
+
+            color: var(--movyla-text);
+
+            font-size: 40px;
+            line-height: 1.15;
+        }
+
+        .conclusao-treino {
+            margin-top: 18px;
+
+            color: var(--movyla-text);
+
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .conclusao-descricao {
+            margin: 8px auto 0;
+
+            color: var(--movyla-muted);
+
+            font-size: 15px;
+        }
+
+        .conclusao-estatisticas {
+            margin-top: 30px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 14px;
+        }
+
+        .estatistica {
+            padding: 22px 15px;
+
+            background:
+                rgba(255, 255, 255, 0.035);
+
+            border: 1px solid var(--movyla-border);
+
+            border-radius: 18px;
+        }
+
+        .estatistica-numero {
+            display: block;
+
+            color: var(--movyla-green);
+
+            font-size: 30px;
+            font-weight: 800;
+
+            line-height: 1.1;
+        }
+
+        .estatistica-texto {
+            display: block;
+
+            margin-top: 6px;
+
+            color: var(--movyla-muted);
+
+            font-size: 13px;
+        }
+
+        .conclusao-motivacao {
+            margin-top: 24px;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            background:
+                rgba(25, 135, 84, 0.08);
+
+            border: 1px solid
+                rgba(25, 135, 84, 0.25);
+
+            color: var(--movyla-text);
+
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .conclusao-botoes {
+            margin-top: 32px;
+
+            display: flex;
+
+            justify-content: center;
+
+            gap: 12px;
+
+            flex-wrap: wrap;
+        }
+
+        .botao-principal {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            min-height: 52px;
+
+            padding: 0 26px;
+
+            border-radius: 12px;
+
+            background:
+                var(--movyla-green);
+
+            color: white;
+
+            text-decoration: none;
+
+            font-weight: 700;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .botao-principal:hover {
+            background:
+                var(--movyla-green-dark);
+
+            transform:
+                translateY(-2px);
+        }
+
+        .botao-secundario {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            min-height: 52px;
+
+            padding: 0 26px;
+
+            border-radius: 12px;
+
+            background:
+                transparent;
+
+            color:
+                var(--movyla-text);
+
+            border:
+                1px solid var(--movyla-border);
+
+            text-decoration: none;
+
+            font-weight: 600;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .botao-secundario:hover {
+            background:
+                var(--movyla-card-2);
+
+            transform:
+                translateY(-2px);
+        }
+
+        .conclusao-detalhe {
+            margin-top: 24px;
+
+            color:
+                var(--movyla-muted);
+
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            .conclusao-page {
+                padding:
+                    25px 15px;
+            }
+
+            .conclusao-card {
+                padding:
+                    38px 20px;
+
+                border-radius:
+                    22px;
+            }
+
+            .conclusao-icone {
+                width: 82px;
+                height: 82px;
+
+                font-size: 40px;
+            }
+
+            .conclusao-titulo {
+                font-size: 30px;
+            }
+
+            .conclusao-treino {
+                font-size: 21px;
+            }
+
+            .conclusao-estatisticas {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .conclusao-botoes {
+                flex-direction:
+                    column;
+            }
+
+            .botao-principal,
+            .botao-secundario {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <div class="conclusao-page">
+
+            <div class="conclusao-card">
+
+                <div class="conclusao-icone">
+                    ✓
+                </div>
+
+
+                <div class="conclusao-label">
+                    MOVYLA TRAINING
+                </div>
+
+
+                <h1 class="conclusao-titulo">
+                    🎉 Treino concluído!
+                </h1>
+
+
+                {% if treino %}
+
+                    <div class="conclusao-treino">
+
+                        {{ treino["nome"] }}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="conclusao-treino">
+
+                        Seu treino
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="conclusao-descricao">
+
+                    Treino registrado com sucesso.
+
+                </div>
+
+
+                <div class="conclusao-estatisticas">
+
+                    <div class="estatistica">
+
+                        <span class="estatistica-numero">
+                            {{ total_exercicios }}
+                        </span>
+
+                        <span class="estatistica-texto">
+                            exercício{% if total_exercicios != 1 %}s{% endif %}
+                        </span>
+
+                    </div>
+
+
+                    <div class="estatistica">
+
+                        <span class="estatistica-numero">
+                            {{ total_series }}
+                        </span>
+
+                        <span class="estatistica-texto">
+                            série{% if total_series != 1 %}s{% endif %} concluída{% if total_series != 1 %}s{% endif %}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="conclusao-motivacao">
+
+                    Excelente trabalho! 💪
+
+                </div>
+
+
+                <div class="conclusao-botoes">
+
+                    <a
+                        href="/treinos"
+                        class="botao-principal"
+                    >
+                        ← Voltar para meus treinos
+                    </a>
+
+
+                    <a
+                        href="/"
+                        class="botao-secundario"
+                    >
+                        🏠 Início
+                    </a>
+
+                </div>
+
+
+                <div class="conclusao-detalhe">
+
+                    Continue evoluindo.
+                    Um treino de cada vez.
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

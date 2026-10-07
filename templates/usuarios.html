@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Usuários - MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="movyla-header">
+
+        <div>
+
+            <div class="movyla-brand">
+                💪 MOVYLA TRAINING
+            </div>
+
+            <div class="movyla-subtitle">
+                Gestão de usuários
+            </div>
+
+        </div>
+
+        <a href="{{ url_for('inicio') }}"
+           class="btn btn-secondary">
+            ← Início
+        </a>
+
+    </div>
+
+
+    <div class="card">
+
+        <h1>👥 Usuários</h1>
+
+        <p class="muted">
+            Gerencie os Personais e seus respectivos alunos.
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>👤 Personais</h2>
+
+        {% if personais %}
+
+            {% for personal in personais %}
+
+                <div class="card"
+                     style="margin-top: 15px;">
+
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        gap:15px;
+                        flex-wrap:wrap;
+                    ">
+
+                        {% if personal['foto'] %}
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename='uploads/' + personal['foto']
+                                ) }}"
+                                alt="Foto"
+                                style="
+                                    width:60px;
+                                    height:60px;
+                                    border-radius:50%;
+                                    object-fit:cover;
+                                "
+                            >
+
+                        {% else %}
+
+                            <div style="
+                                width:60px;
+                                height:60px;
+                                border-radius:50%;
+                                background:#198754;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                font-size:25px;
+                                font-weight:bold;
+                                color:white;
+                            ">
+                                {{ personal['nome'][0]|upper }}
+                            </div>
+
+                        {% endif %}
+
+
+                        <div style="flex:1;">
+
+                            <h3 style="margin:0;">
+                                {{ personal['nome'] }}
+                            </h3>
+
+                            <p class="muted"
+                               style="margin:5px 0;">
+                                Usuário: {{ personal['usuario'] }}
+                            </p>
+
+                            <p style="margin:5px 0;">
+
+                                <strong>
+                                    {{ personal['total_alunos'] }}
+                                </strong>
+
+                                {% if personal['total_alunos'] == 1 %}
+                                    aluno
+                                {% else %}
+                                    alunos
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <a
+                                href="{{ url_for(
+                                    'usuario_personal',
+                                    personal_id=personal['id']
+                                ) }}"
+                                class="btn btn-primary"
+                            >
+                                Ver alunos →
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="alert">
+
+                Nenhum Personal cadastrado.
+
+            </div>
+
+            <br>
+
+            <a
+                href="{{ url_for('personal_novo') }}"
+                class="btn btn-primary"
+            >
+                + Cadastrar Personal
+            </a>
+
+        {% endif %}
+
+    </div>
+
+
+    <div style="
+        margin-top:20px;
+        text-align:center;
+    ">
+
+        <a href="{{ url_for('inicio') }}"
+           class="btn btn-secondary">
+
+            🏠 Início
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

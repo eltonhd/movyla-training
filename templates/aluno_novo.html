@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Novo aluno - MOVYLA Training</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='movyla.css') }}">
+
+<style>
+
+    .container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .card {
+        background: var(--movyla-card);
+        border: 1px solid var(--movyla-border);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .logo {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    .subtitulo {
+        color: var(--movyla-muted);
+        margin-bottom: 30px;
+    }
+
+    label {
+        display: block;
+        margin-top: 18px;
+        margin-bottom: 7px;
+        color: #d7ddd9;
+        font-weight: 500;
+    }
+
+    input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 13px;
+        border: 1px solid var(--movyla-border);
+        border-radius: 8px;
+        background: #0d100e;
+        color: white;
+        font-size: 16px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    input::placeholder {
+        color: #69736d;
+    }
+
+    input:focus {
+        border-color: var(--movyla-green);
+        box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.15);
+    }
+
+    button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        background: var(--movyla-green);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    button:hover {
+        background: var(--movyla-green-dark);
+    }
+
+    .voltar {
+        display: block;
+        text-align: center;
+        margin-top: 18px;
+        color: var(--movyla-muted);
+        text-decoration: none;
+    }
+
+    .voltar:hover {
+        color: white;
+        text-decoration: none;
+    }
+
+    .erro {
+        background: rgba(220, 53, 69, 0.14);
+        color: #ff8995;
+        border: 1px solid rgba(220, 53, 69, 0.25);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 600px) {
+
+        .container {
+            margin: 20px auto;
+            padding: 12px;
+        }
+
+        .card {
+            padding: 24px;
+        }
+
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<div class="card">
+
+    <div class="logo">
+        MOVYLA
+    </div>
+
+    <div class="subtitulo">
+        TRAINING • Novo aluno
+    </div>
+
+    {% if mensagem %}
+
+        <div class="erro">
+            {{ mensagem }}
+        </div>
+
+    {% endif %}
+
+    <form method="POST">
+
+        <label>
+            Nome do aluno
+        </label>
+
+        <input
+            type="text"
+            name="nome"
+            placeholder="Ex.: João da Silva"
+            required
+        >
+
+        <label>
+            Usuário
+        </label>
+
+        <input
+            type="text"
+            name="usuario"
+            placeholder="Ex.: joao"
+            required
+        >
+
+        <label>
+            Senha
+        </label>
+
+        <input
+            type="password"
+            name="senha"
+            placeholder="Digite a senha"
+            required
+        >
+
+        <button type="submit">
+            CADASTRAR ALUNO
+        </button>
+
+    </form>
+
+    <a class="voltar" href="/alunos">
+        ← Voltar para alunos
+    </a>
+
+</div>
+```
+
+</div>
+
+</body>
+
+</html>

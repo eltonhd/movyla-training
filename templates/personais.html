@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Meus Personais — MOVYLA Training</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+
+<style>
+    .pagina {
+        max-width: 1000px;
+        margin: 40px auto;
+    }
+
+    .cabecalho-pagina {
+        margin-bottom: 30px;
+    }
+
+    .label-pagina {
+        color: #198754;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .cabecalho-pagina h1 {
+        margin-bottom: 8px;
+    }
+
+    .cabecalho-pagina p {
+        color: #aeb7b1;
+        margin: 0;
+    }
+
+    .acoes-topo {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .personais-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .personal-card {
+        background: #151a17;
+        border: 1px solid #2a332e;
+        border-radius: 18px;
+        padding: 24px;
+    }
+
+    .personal-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .personal-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .personal-card h2 {
+        margin: 0 0 5px 0;
+        font-size: 21px;
+    }
+
+    .personal-usuario {
+        color: #aeb7b1;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .personal-info {
+        border-top: 1px solid #2a332e;
+        padding-top: 18px;
+        margin-top: 10px;
+    }
+
+    .personal-info strong {
+        font-size: 24px;
+        display: block;
+    }
+
+    .personal-info span {
+        color: #aeb7b1;
+        font-size: 13px;
+    }
+
+    .status {
+        display: inline-block;
+        margin-top: 18px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-ativo {
+        background: rgba(25, 135, 84, 0.15);
+        color: #198754;
+    }
+
+    .status-inativo {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+    }
+
+    .vazio {
+        background: #151a17;
+        border: 1px solid #2a332e;
+        border-radius: 18px;
+        padding: 40px 25px;
+        text-align: center;
+        color: #aeb7b1;
+    }
+
+    .vazio strong {
+        display: block;
+        color: #f2f2f2;
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .rodape-acoes {
+        margin-top: 30px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .rodape-acoes a {
+        text-decoration: none;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<div class="pagina">
+
+    <div class="cabecalho-pagina">
+
+        <div class="label-pagina">
+            MOVYLA TRAINING
+        </div>
+
+        <h1>👥 Meus Personais</h1>
+
+        <p>
+            Gerencie os profissionais responsáveis pelos seus alunos.
+        </p>
+
+    </div>
+
+    <div class="acoes-topo">
+
+        <a
+            href="{{ url_for('personal_novo') }}"
+            class="botao-principal">
+            ＋ Novo Personal
+        </a>
+
+    </div>
+
+    {% if personais %}
+
+        <div class="personais-grid">
+
+            {% for personal in personais %}
+
+                <div class="personal-card">
+
+                    <div class="personal-avatar">
+
+                        {% if personal["foto"] %}
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + personal['foto']) }}"
+                                alt="Foto de {{ personal['nome'] }}"
+                            >
+                        {% else %}
+                            {{ personal["nome"][0]|upper }}
+                        {% endif %}
+
+                    </div>
+
+                    <h2>
+                        {{ personal["nome"] }}
+                    </h2>
+
+                    <div class="personal-usuario">
+                        @{{ personal["usuario"] }}
+                    </div>
+
+                    <div class="personal-info">
+
+                        <strong>
+                            {{ personal["total_alunos"] }}
+                        </strong>
+
+                        <span>
+                            {% if personal["total_alunos"] == 1 %}
+                                aluno
+                            {% else %}
+                                alunos
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                    {% if personal["ativo"] %}
+                        <div class="status status-ativo">
+                            ● Ativo
+                        </div>
+                    {% else %}
+                        <div class="status status-inativo">
+                            ● Inativo
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="vazio">
+
+            <strong>
+                Nenhum Personal cadastrado
+            </strong>
+
+            Cadastre seu primeiro profissional para começar a montar sua equipe.
+
+        </div>
+
+    {% endif %}
+
+    <div class="rodape-acoes">
+
+        <a href="{{ url_for('inicio') }}">
+            ← Voltar
+        </a>
+
+        <a href="{{ url_for('inicio') }}">
+            🏠 Início
+        </a>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+</body>
+</html>
