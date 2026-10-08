@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Treino atribuído - MOVYLA Training</title>
+    <title>Treino atribuÃ­do - MOVYLA Training</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='movyla.css') }}">
@@ -161,19 +161,19 @@
 
             <div class="sucesso-icone">
 
-                ✓
+                âœ“
 
             </div>
 
             <h1>
 
-                Treino atribuído com sucesso!
+                Treino atribuÃ­do com sucesso!
 
             </h1>
 
             <p>
 
-                O treino foi atribuído ao aluno corretamente.
+                O treino foi atribuÃ­do ao aluno corretamente.
 
             </p>
 
@@ -181,30 +181,30 @@
 
                 <strong>
 
-                    🏋️ {{ treino["nome"] }}
+                    ðŸ‹ï¸ {{ treino["nome"] }}
 
                 </strong>
 
                 <p>
 
-                    👤 Aluno: {{ aluno["nome"] }}
+                    ðŸ‘¤ Aluno: {{ aluno["nome"] }}
 
                 </p>
 
                 <p>
 
                     {% if dia_semana == 1 %}
-                        📅 Segunda-feira
+                        ðŸ“… Segunda-feira
                     {% elif dia_semana == 2 %}
-                        📅 Terça-feira
+                        ðŸ“… TerÃ§a-feira
                     {% elif dia_semana == 3 %}
-                        📅 Quarta-feira
+                        ðŸ“… Quarta-feira
                     {% elif dia_semana == 4 %}
-                        📅 Quinta-feira
+                        ðŸ“… Quinta-feira
                     {% elif dia_semana == 5 %}
-                        📅 Sexta-feira
+                        ðŸ“… Sexta-feira
                     {% elif dia_semana == 6 %}
-                        📅 Sábado
+                        ðŸ“… SÃ¡bado
                     {% endif %}
 
                 </p>

@@ -213,7 +213,7 @@
 
     <div class="topo">
 
-        <h1>🏋️ {{ treino[1] }}</h1>
+        <h1>ðŸ‹ï¸ {{ treino[1] }}</h1>
 
         <p>Registre seu treino</p>
 
@@ -237,18 +237,18 @@
                     </h2>
 
                     <div class="grupo">
-                        💪 {{ exercicio[2] }}
+                        ðŸ’ª {{ exercicio[2] }}
                     </div>
 
 
                     <div class="faixa">
 
                         <strong>
-                            🎯 Faixa de repetições
+                            ðŸŽ¯ Faixa de repetiÃ§Ãµes
                         </strong>
 
-                        {{ exercicio[3] }}–{{ exercicio[4] }}
-                        repetições
+                        {{ exercicio[3] }}â€“{{ exercicio[4] }}
+                        repetiÃ§Ãµes
 
                     </div>
 
@@ -258,11 +258,11 @@
                         <div class="historico">
 
                             <div class="historico-titulo">
-                                📊 Último treino
+                                ðŸ“Š Ãšltimo treino
                             </div>
 
                             <div class="historico-data">
-                                📅
+                                ðŸ“…
                                 {{ historico[exercicio[0]]["data"] }}
                             </div>
 
@@ -272,11 +272,11 @@
                                 <div class="historico-serie">
 
                                     <span>
-                                        Série {{ registro[1] }}
+                                        SÃ©rie {{ registro[1] }}
                                     </span>
 
                                     <strong>
-                                        {{ registro[2] }} kg ×
+                                        {{ registro[2] }} kg Ã—
                                         {{ registro[3] }} reps
                                     </strong>
 
@@ -291,10 +291,10 @@
 
                     <div class="sugestao">
 
-                        💡 <strong>Objetivo:</strong>
+                        ðŸ’¡ <strong>Objetivo:</strong>
 
-                        tente evoluir carga ou repetições
-                        mantendo boa execução.
+                        tente evoluir carga ou repetiÃ§Ãµes
+                        mantendo boa execuÃ§Ã£o.
 
                     </div>
 
@@ -421,7 +421,7 @@
                         class="adicionar"
                         onclick="adicionarSerie('{{ exercicio[0] }}')"
                     >
-                        ＋ ADICIONAR SÉRIE
+                        ï¼‹ ADICIONAR SÃ‰RIE
                     </button>
 
                 </div>
@@ -433,17 +433,17 @@
                 type="submit"
                 class="finalizar"
             >
-                ✅ FINALIZAR TREINO
+                âœ… FINALIZAR TREINO
             </button>
 
         {% else %}
 
             <div class="exercicio">
 
-                <h2>Nenhum exercício</h2>
+                <h2>Nenhum exercÃ­cio</h2>
 
                 <p>
-                    Este treino ainda não possui exercícios.
+                    Este treino ainda nÃ£o possui exercÃ­cios.
                 </p>
 
             </div>
@@ -457,7 +457,7 @@
         href="/treinos"
         class="voltar"
     >
-        ← Voltar para meus treinos
+        â† Voltar para meus treinos
     </a>
 
 </div>
@@ -524,7 +524,7 @@ function adicionarSerie(exercicioId) {
             class="remover"
             onclick="removerSerie(this)"
         >
-            ×
+            Ã—
         </button>
     `;
 

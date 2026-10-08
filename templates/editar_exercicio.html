@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Editar Exercício - MOVYLA Training</title>
+    <title>Editar ExercÃ­cio - MOVYLA Training</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='movyla.css') }}">
@@ -19,10 +19,10 @@
 
         <div>
 
-            <h1>✏️ Editar exercício</h1>
+            <h1>âœï¸ Editar exercÃ­cio</h1>
 
             <p class="texto-muted">
-                Atualize as informações deste exercício.
+                Atualize as informaÃ§Ãµes deste exercÃ­cio.
             </p>
 
         </div>
@@ -31,7 +31,7 @@
             href="{{ url_for('exercicios') }}"
             class="btn btn-secondary"
         >
-            ← Voltar
+            â† Voltar
         </a>
 
     </div>
@@ -48,7 +48,7 @@
         "
     >
 
-        ⚠️ {{ erro }}
+        âš ï¸ {{ erro }}
 
     </div>
 
@@ -65,10 +65,15 @@
 
         <form method="POST">
 
+
+            <!-- ================================================= -->
+            <!-- NOME -->
+            <!-- ================================================= -->
+
             <div class="form-group">
 
                 <label for="nome">
-                    Nome do exercício
+                    Nome do exercÃ­cio
                 </label>
 
                 <input
@@ -82,6 +87,10 @@
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- GRUPO MUSCULAR -->
+            <!-- ================================================= -->
 
             <div class="form-group">
 
@@ -117,11 +126,103 @@
             </div>
 
 
+            <!-- ================================================= -->
+            <!-- REPETIÃ‡Ã•ES -->
+            <!-- ================================================= -->
+
+            <div
+                style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                "
+            >
+
+                <div class="form-group">
+
+                    <label for="repeticoes_min">
+                        RepetiÃ§Ãµes mÃ­nimas
+                    </label>
+
+                    <input
+                        type="number"
+                        id="repeticoes_min"
+                        name="repeticoes_min"
+                        min="1"
+                        step="1"
+                        value="{{ request.form.get('repeticoes_min', exercicio['repeticoes_min']) }}"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="repeticoes_max">
+                        RepetiÃ§Ãµes mÃ¡ximas
+                    </label>
+
+                    <input
+                        type="number"
+                        id="repeticoes_max"
+                        name="repeticoes_max"
+                        min="1"
+                        step="1"
+                        value="{{ request.form.get('repeticoes_max', exercicio['repeticoes_max']) }}"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- INCREMENTO -->
+            <!-- ================================================= -->
+
+            <div class="form-group">
+
+                <label for="incremento_carga">
+                    Incremento de carga (kg)
+                </label>
+
+                <input
+                    type="number"
+                    id="incremento_carga"
+                    name="incremento_carga"
+                    min="0.1"
+                    step="0.1"
+                    value="{{ request.form.get('incremento_carga', exercicio['incremento_carga']) }}"
+                    required
+                >
+
+                <small
+                    class="texto-muted"
+                    style="
+                        display: block;
+                        margin-top: 8px;
+                    "
+                >
+
+                    Valor utilizado pela progressÃ£o automÃ¡tica
+                    deste exercÃ­cio.
+
+                </small>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- YOUTUBE -->
+            <!-- ================================================= -->
+
             <div class="form-group">
 
                 <label for="video_url">
 
-                    🎥 Vídeo demonstrativo no YouTube
+                    ðŸŽ¥ VÃ­deo demonstrativo no YouTube
 
                     <span class="texto-muted">
                         (opcional)
@@ -145,13 +246,17 @@
                     "
                 >
 
-                    O aluno poderá acessar este vídeo
+                    O aluno poderÃ¡ acessar este vÃ­deo
                     diretamente na tela do treino.
 
                 </small>
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- BOTÃ•ES -->
+            <!-- ================================================= -->
 
             <div
                 style="
@@ -166,8 +271,9 @@
                     type="submit"
                     class="btn btn-primary"
                 >
-                    💾 Salvar alterações
+                    ðŸ’¾ Salvar alteraÃ§Ãµes
                 </button>
+
 
                 <a
                     href="{{ url_for('exercicios') }}"

@@ -9,3 +9,13 @@ meutreino.db
 app_backup_*.py
 app_atual.txt
 templates/*_backup*.html
+# Bancos de dados e backups
+*.db
+*.db-shm
+*.db-wal
+
+# Arquivos de recuperação
+app_corrompido_*.py
+
+# Fotos enviadas pelos usuarios
+static/uploads/

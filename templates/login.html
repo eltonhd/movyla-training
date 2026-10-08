@@ -1,17 +1,16 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>MOVYLA Training</title>
+    <title>MOVYLA Training | Login</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -19,190 +18,267 @@
         body {
             margin: 0;
             min-height: 100vh;
+            min-height: 100dvh;
+            padding: 24px 16px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #ffffff;
+
+            background:
+                radial-gradient(
+                    circle at 50% 35%,
+                    rgba(24, 112, 76, 0.24),
+                    transparent 55%
+                ),
+                linear-gradient(
+                    135deg,
+                    #020403 0%,
+                    #0b1b14 50%,
+                    #020403 100%
+                );
+        }
+
+        /* BRILHO DECORATIVO */
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(25, 135, 84, 0.12),
+                    transparent 65%
+                );
+
+            pointer-events: none;
+        }
+
+        /* PAINEL DE LOGIN */
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+
+            width: 100%;
+            max-width: 420px;
+            padding: 36px 34px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(13, 22, 18, 0.82),
+                    rgba(5, 10, 8, 0.88)
+                );
+
+            border: 1px solid
+                rgba(75, 160, 120, 0.28);
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.65),
+                0 0 45px rgba(20, 120, 80, 0.08);
+
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* LOGO MOVYLA */
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            margin: 0 auto;
+
+            border-radius: 12px;
+
+            filter:
+                drop-shadow(
+                    0 8px 18px rgba(0, 0, 0, 0.4)
+                );
+        }
+
+        /* CAMPOS */
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+
+            font-size: 14px;
+            font-weight: 600;
+            color: #d1dcd5;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 22px;
+
+            border: 1px solid
+                rgba(75, 160, 120, 0.12);
+
+            border-radius: 10px;
+
+            background: rgba(35, 45, 41, 0.92);
+            color: white;
+
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        input:focus {
+            background: rgba(43, 55, 50, 0.98);
+            border-color: #39a875;
+
+            box-shadow:
+                0 0 0 3px rgba(45, 140, 95, 0.15);
+        }
+
+        input::placeholder {
+            color: #a0aaa4;
+        }
+
+        /* BOTÃO ENTRAR VERDE DEGRADÊ */
+
+        button {
+            width: 100%;
+            padding: 16px;
+
+            border: none;
+            border-radius: 10px;
 
             background:
                 linear-gradient(
                     135deg,
-                    #111111,
-                    #242424
+                    #16a765,
+                    #087744
                 );
 
-            color: white;
-        }
+            color: #ffffff;
 
-        .login-container {
-
-            width: 100%;
-            max-width: 400px;
-
-            padding: 35px;
-
-            background: #1c1c1c;
-
-            border-radius: 20px;
-
-            box-shadow:
-                0 15px 40px rgba(0,0,0,0.5);
-
-        }
-
-        .logo {
-
-            text-align: center;
-
-            margin-bottom: 30px;
-        }
-
-        .logo h1 {
-
-            margin: 0;
-
-            font-size: 36px;
-
-            letter-spacing: 2px;
-
+            font-family: inherit;
+            font-size: 16px;
             font-weight: 800;
-        }
-
-        .logo span {
-
-            display: block;
-
-            margin-top: 5px;
-
-            font-size: 14px;
-
-            letter-spacing: 4px;
-
-            color: #bbbbbb;
-        }
-
-        label {
-
-            display: block;
-
-            margin-bottom: 7px;
-
-            font-size: 14px;
-
-            color: #cccccc;
-        }
-
-        input {
-
-            width: 100%;
-
-            padding: 14px;
-
-            margin-bottom: 20px;
-
-            border: none;
-
-            border-radius: 10px;
-
-            background: #303030;
-
-            color: white;
-
-            font-size: 16px;
-
-            outline: none;
-        }
-
-        input:focus {
-
-            background: #383838;
-        }
-
-        button {
-
-            width: 100%;
-
-            padding: 15px;
-
-            border: none;
-
-            border-radius: 10px;
-
-            background: #ffffff;
-
-            color: #111111;
-
-            font-size: 16px;
-
-            font-weight: bold;
+            letter-spacing: 1px;
 
             cursor: pointer;
 
+            box-shadow:
+                0 5px 20px rgba(0, 130, 70, 0.2);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                filter 0.2s ease;
         }
 
         button:hover {
+            transform: translateY(-2px);
 
-            background: #dddddd;
+            filter: brightness(1.15);
+
+            box-shadow:
+                0 8px 25px rgba(0, 150, 80, 0.35);
         }
 
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:focus-visible {
+            outline: 3px solid #8af0b5;
+            outline-offset: 3px;
+        }
+
+        /* MENSAGEM DE ERRO */
+
         .erro {
+            margin-bottom: 22px;
+            padding: 13px;
 
-            margin-bottom: 20px;
+            border-radius: 9px;
 
-            padding: 12px;
+            border: 1px solid
+                rgba(255, 100, 100, 0.2);
 
-            border-radius: 8px;
-
-            background: #5c2020;
-
+            background: rgba(92, 32, 32, 0.85);
             color: #ffb3b3;
 
             text-align: center;
-
             font-size: 14px;
         }
 
-        .rodape {
+        /* VERSÃO PARA CELULARES */
 
-            margin-top: 25px;
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 15px;
+            }
 
-            text-align: center;
+            .login-container {
+                padding: 30px 23px;
+                border-radius: 18px;
+            }
 
-            color: #777777;
+            .logo img {
+                max-width: 260px;
+            }
+        }
 
-            font-size: 12px;
+        @media (prefers-reduced-motion: reduce) {
+            input,
+            button {
+                transition: none;
+            }
         }
 
     </style>
-
 </head>
-
 
 <body>
 
     <div class="login-container">
 
+        <!-- LOGO PRINCIPAL -->
+
         <div class="logo">
-
-            <h1>MOVYLA</h1>
-
-            <span>TRAINING</span>
-
+            <img
+                src="{{ url_for('static', filename='logo_movyla.png') }}"
+                alt="MOVYLA Training"
+            >
         </div>
 
+        <!-- MENSAGEM DE ERRO -->
 
         {% if mensagem %}
 
-        <div class="erro">
-
-            {{ mensagem }}
-
-        </div>
+            <div class="erro" role="alert">
+                {{ mensagem }}
+            </div>
 
         {% endif %}
 
+        <!-- FORMULÁRIO DE LOGIN -->
 
         <form method="POST">
 
@@ -215,9 +291,9 @@
                 id="usuario"
                 name="usuario"
                 placeholder="Digite seu usuário"
+                autocomplete="username"
                 required
             >
-
 
             <label for="senha">
                 Senha
@@ -228,27 +304,17 @@
                 id="senha"
                 name="senha"
                 placeholder="Digite sua senha"
+                autocomplete="current-password"
                 required
             >
 
-
             <button type="submit">
-
                 ENTRAR
-
             </button>
 
         </form>
 
-
-        <div class="rodape">
-
-            MOVYLA Training
-
-        </div>
-
     </div>
 
 </body>
-
 </html>

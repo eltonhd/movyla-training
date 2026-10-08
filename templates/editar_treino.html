@@ -31,7 +31,7 @@
         }
 
         /* =====================================================
-           ADICIONAR EXERCÍCIO
+           ADICIONAR EXERCÃCIO
            ===================================================== */
 
         .adicionar-exercicio-card {
@@ -82,7 +82,7 @@
         }
 
         /* =====================================================
-           EXERCÍCIOS
+           EXERCÃCIOS
            ===================================================== */
 
         .exercicio-card {
@@ -132,7 +132,7 @@
         }
 
         /* =====================================================
-           CONFIGURAÇÕES
+           CONFIGURAÃ‡Ã•ES
            ===================================================== */
 
         .configuracoes {
@@ -157,7 +157,7 @@
         }
 
         /* =====================================================
-           SÉRIES
+           SÃ‰RIES
            ===================================================== */
 
         .series-titulo {
@@ -217,7 +217,7 @@
         }
 
         /* =====================================================
-           BOTÕES FINAIS
+           BOTÃ•ES FINAIS
            ===================================================== */
 
         .acoes-finais {
@@ -326,20 +326,20 @@
 <div class="container">
 
     <!-- =====================================================
-         CABEÇALHO
+         CABEÃ‡ALHO
          ===================================================== -->
 
     <div style="margin-bottom: 20px;">
 
         <a href="{{ url_for('treinos') }}">
-            ← Voltar para treinos
+            â† Voltar para treinos
         </a>
 
     </div>
 
 
     <h1 class="pagina-titulo">
-        ✏️ Editar treino
+        âœï¸ Editar treino
     </h1>
 
     <div class="pagina-subtitulo">
@@ -357,7 +357,7 @@
 
 
     <!-- =====================================================
-         ADICIONAR EXERCÍCIO
+         ADICIONAR EXERCÃCIO
          ===================================================== -->
 
     {% if exercicios_disponiveis %}
@@ -365,11 +365,11 @@
     <div class="adicionar-exercicio-card">
 
         <h2>
-            ＋ Adicionar exercício
+            ï¼‹ Adicionar exercÃ­cio
         </h2>
 
         <p>
-            Escolha um exercício para adicionar a este treino.
+            Escolha um exercÃ­cio para adicionar a este treino.
         </p>
 
         <form
@@ -380,7 +380,7 @@
             <div class="campo-exercicio">
 
                 <label for="adicionar_exercicio_id">
-                    Exercício
+                    ExercÃ­cio
                 </label>
 
                 <select
@@ -390,7 +390,7 @@
                 >
 
                     <option value="">
-                        Selecione um exercício
+                        Selecione um exercÃ­cio
                     </option>
 
                     {% for exercicio in exercicios_disponiveis %}
@@ -400,7 +400,7 @@
                         {{ exercicio['nome'] }}
 
                         {% if exercicio['grupo_muscular'] %}
-                            — {{ exercicio['grupo_muscular'] }}
+                            â€” {{ exercicio['grupo_muscular'] }}
                         {% endif %}
 
                     </option>
@@ -415,7 +415,7 @@
                 type="submit"
                 class="btn btn-primary btn-adicionar"
             >
-                ＋ Adicionar exercício
+                ï¼‹ Adicionar exercÃ­cio
             </button>
 
         </form>
@@ -426,7 +426,7 @@
 
     <div class="alert alert-success">
 
-        ✓ Todos os exercícios cadastrados já estão neste treino.
+        âœ“ Todos os exercÃ­cios cadastrados jÃ¡ estÃ£o neste treino.
 
     </div>
 
@@ -434,7 +434,7 @@
 
 
     <!-- =====================================================
-         FORMULÁRIO PRINCIPAL
+         FORMULÃRIO PRINCIPAL
          ===================================================== -->
 
     <form
@@ -452,7 +452,7 @@
             >
 
                 <!-- =================================================
-                     TOPO DO EXERCÍCIO
+                     TOPO DO EXERCÃCIO
                      ================================================= -->
 
                 <div class="exercicio-topo">
@@ -461,7 +461,7 @@
 
                         <div class="exercicio-numero">
 
-                            EXERCÍCIO {{ loop.index }}
+                            EXERCÃCIO {{ loop.index }}
 
                         </div>
 
@@ -478,7 +478,7 @@
                             {% endif %}
 
                             {% if exercicio["equipamento"] %}
-                                • {{ exercicio["equipamento"] }}
+                                â€¢ {{ exercicio["equipamento"] }}
                             {% endif %}
 
                         </div>
@@ -488,7 +488,7 @@
 
                         <div class="video-indicador">
 
-                            ▶ Vídeo explicativo cadastrado
+                            â–¶ VÃ­deo explicativo cadastrado
 
                         </div>
 
@@ -500,7 +500,7 @@
 
 
                 <!-- =================================================
-                     CONFIGURAÇÕES
+                     CONFIGURAÃ‡Ã•ES
                      ================================================= -->
 
                 <div class="configuracoes">
@@ -508,7 +508,7 @@
                     <div class="campo">
 
                         <label>
-                            Progressão
+                            ProgressÃ£o
                         </label>
 
                         <select
@@ -521,7 +521,7 @@
                                     selected
                                 {% endif %}
                             >
-                                Automática
+                                AutomÃ¡tica
                             </option>
 
                             <option
@@ -577,11 +577,11 @@
 
 
                 <!-- =================================================
-                     SÉRIES
+                     SÃ‰RIES
                      ================================================= -->
 
                 <h3 class="series-titulo">
-                    🎯 Repetições por série
+                    ðŸŽ¯ RepetiÃ§Ãµes por sÃ©rie
                 </h3>
 
 
@@ -605,7 +605,7 @@
                         <div class="serie-item">
 
                             <div class="serie-numero">
-                                Série {{ loop.index }}
+                                SÃ©rie {{ loop.index }}
                             </div>
 
                             <input
@@ -617,7 +617,7 @@
                             >
 
                             <span>
-                                repetições
+                                repetiÃ§Ãµes
                             </span>
 
                             <button
@@ -625,7 +625,7 @@
                                 class="btn btn-remover-serie"
                                 onclick="removerSerie(this)"
                             >
-                                🗑 Remover
+                                ðŸ—‘ Remover
                             </button>
 
                         </div>
@@ -637,7 +637,7 @@
                         <div class="serie-item">
 
                             <div class="serie-numero">
-                                Série 1
+                                SÃ©rie 1
                             </div>
 
                             <input
@@ -649,7 +649,7 @@
                             >
 
                             <span>
-                                repetições
+                                repetiÃ§Ãµes
                             </span>
 
                             <button
@@ -657,7 +657,7 @@
                                 class="btn btn-remover-serie"
                                 onclick="removerSerie(this)"
                             >
-                                🗑 Remover
+                                ðŸ—‘ Remover
                             </button>
 
                         </div>
@@ -668,7 +668,7 @@
 
 
                 <!-- =================================================
-                     AÇÕES DAS SÉRIES
+                     AÃ‡Ã•ES DAS SÃ‰RIES
                      ================================================= -->
 
                 <div class="acoes-exercicio">
@@ -680,7 +680,7 @@
                             {{ exercicio['id'] }}
                         )"
                     >
-                        ＋ Adicionar série
+                        ï¼‹ Adicionar sÃ©rie
                     </button>
 
                 </div>
@@ -693,7 +693,7 @@
 
             <div class="alert alert-warning">
 
-                Este treino ainda não possui exercícios.
+                Este treino ainda nÃ£o possui exercÃ­cios.
 
             </div>
 
@@ -701,7 +701,7 @@
 
 
         <!-- =====================================================
-             AÇÕES FINAIS
+             AÃ‡Ã•ES FINAIS
              ===================================================== -->
 
         <div class="acoes-finais">
@@ -710,7 +710,7 @@
                 type="submit"
                 class="btn btn-primary"
             >
-                💾 Salvar alterações
+                ðŸ’¾ Salvar alteraÃ§Ãµes
             </button>
 
             <a
@@ -741,11 +741,11 @@
     <div class="modal-box">
 
         <div class="modal-icone">
-            ⚠️
+            âš ï¸
         </div>
 
         <h2>
-            Atenção
+            AtenÃ§Ã£o
         </h2>
 
         <p>
@@ -770,7 +770,7 @@
 <script>
 
 /* ============================================================
-   ADICIONAR SÉRIE
+   ADICIONAR SÃ‰RIE
    ============================================================ */
 
 function adicionarSerie(exercicioId) {
@@ -801,7 +801,7 @@ function adicionarSerie(exercicioId) {
     item.innerHTML = `
 
         <div class="serie-numero">
-            Série ${numeroSerie}
+            SÃ©rie ${numeroSerie}
         </div>
 
         <input
@@ -813,7 +813,7 @@ function adicionarSerie(exercicioId) {
         >
 
         <span>
-            repetições
+            repetiÃ§Ãµes
         </span>
 
         <button
@@ -821,7 +821,7 @@ function adicionarSerie(exercicioId) {
             class="btn btn-remover-serie"
             onclick="removerSerie(this)"
         >
-            🗑 Remover
+            ðŸ—‘ Remover
         </button>
 
     `;
@@ -832,7 +832,7 @@ function adicionarSerie(exercicioId) {
 
 
 /* ============================================================
-   REMOVER SÉRIE
+   REMOVER SÃ‰RIE
    ============================================================ */
 
 function removerSerie(botao) {
@@ -859,7 +859,7 @@ function removerSerie(botao) {
     if (quantidadeAtual <= 1) {
 
         alert(
-            "O exercício precisa ter pelo menos uma série."
+            "O exercÃ­cio precisa ter pelo menos uma sÃ©rie."
         );
 
         return;
@@ -873,7 +873,7 @@ function removerSerie(botao) {
 
 
 /* ============================================================
-   RENUMERAR SÉRIES
+   RENUMERAR SÃ‰RIES
    ============================================================ */
 
 function renumerarSeries(lista) {
@@ -900,7 +900,7 @@ function renumerarSeries(lista) {
             if (numeroElemento) {
 
                 numeroElemento.textContent =
-                    "Série " + numero;
+                    "SÃ©rie " + numero;
 
             }
 

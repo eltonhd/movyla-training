@@ -332,7 +332,7 @@
 <div class="pagina-editar">
 
     <!-- ================================================== -->
-    <!-- CABEÇALHO DO ALUNO -->
+    <!-- CABEÃ‡ALHO DO ALUNO -->
     <!-- ================================================== -->
 
     <div class="topo-editar">
@@ -355,11 +355,11 @@
 
         <div>
 
-            <h1>✏️ Editar treino</h1>
+            <h1>âœï¸ Editar treino</h1>
 
             <p>
-                👤 {{ aluno["nome"] }}
-                · @{{ aluno["usuario"] }}
+                ðŸ‘¤ {{ aluno["nome"] }}
+                Â· @{{ aluno["usuario"] }}
             </p>
 
         </div>
@@ -374,7 +374,7 @@
     {% if erro %}
 
         <div class="erro-box">
-            ⚠️ {{ erro }}
+            âš ï¸ {{ erro }}
         </div>
 
     {% endif %}
@@ -383,13 +383,13 @@
     <form method="POST">
 
         <!-- ============================================== -->
-        <!-- INFORMAÇÕES DO TREINO -->
+        <!-- INFORMAÃ‡Ã•ES DO TREINO -->
         <!-- ============================================== -->
 
         <div class="card-treino">
 
             <h2>
-                🏋️ {{ treino["nome"] }}
+                ðŸ‹ï¸ {{ treino["nome"] }}
             </h2>
 
             {% if treino["descricao"] %}
@@ -408,7 +408,7 @@
             <div class="campo-dia">
 
                 <label for="dia_semana">
-                    📅 Dia da semana
+                    ðŸ“… Dia da semana
                 </label>
 
                 <select
@@ -432,7 +432,7 @@
                         value="2"
                         {% if atribuicao["dia_semana"] == 2 %}selected{% endif %}
                     >
-                        Terça-feira
+                        TerÃ§a-feira
                     </option>
 
                     <option
@@ -460,7 +460,7 @@
                         value="6"
                         {% if atribuicao["dia_semana"] == 6 %}selected{% endif %}
                     >
-                        Sábado
+                        SÃ¡bado
                     </option>
 
                 </select>
@@ -471,11 +471,11 @@
 
 
         <!-- ================================================= -->
-        <!-- EXERCÍCIOS -->
+        <!-- EXERCÃCIOS -->
         <!-- ================================================= -->
 
         <h2 class="titulo-exercicios">
-            📋 Prescrição individual
+            ðŸ“‹ PrescriÃ§Ã£o individual
         </h2>
 
 
@@ -484,7 +484,7 @@
             <div class="card-exercicio">
 
                 <!-- ========================================= -->
-                <!-- CABEÇALHO -->
+                <!-- CABEÃ‡ALHO -->
                 <!-- ========================================= -->
 
                 <div class="cabecalho-exercicio">
@@ -504,7 +504,7 @@
                             {% if exercicio["grupo_muscular"] %}
 
                                 <p>
-                                    💪 {{ exercicio["grupo_muscular"] }}
+                                    ðŸ’ª {{ exercicio["grupo_muscular"] }}
                                 </p>
 
                             {% endif %}
@@ -512,7 +512,7 @@
                             {% if exercicio["equipamento"] %}
 
                                 <p>
-                                    🏋️ {{ exercicio["equipamento"] }}
+                                    ðŸ‹ï¸ {{ exercicio["equipamento"] }}
                                 </p>
 
                             {% endif %}
@@ -530,7 +530,7 @@
                             rel="noopener noreferrer"
                             class="botao-youtube"
                         >
-                            ▶️ Ver exercício
+                            â–¶ï¸ Ver exercÃ­cio
                         </a>
 
                     {% endif %}
@@ -539,11 +539,11 @@
 
 
                 <!-- ========================================= -->
-                <!-- SÉRIES -->
+                <!-- SÃ‰RIES -->
                 <!-- ========================================= -->
 
                 <div class="titulo-series">
-                    🔢 Séries e repetições
+                    ðŸ”¢ SÃ©ries e repetiÃ§Ãµes
                 </div>
 
                 <div
@@ -560,7 +560,7 @@
                         >
 
                             <div class="numero-serie">
-                                Série <span class="numero-visivel">
+                                SÃ©rie <span class="numero-visivel">
                                     {{ serie["numero_serie"] }}
                                 </span>
                             </div>
@@ -568,7 +568,7 @@
                             <div class="campo-repeticoes">
 
                                 <label>
-                                    Repetições
+                                    RepetiÃ§Ãµes
                                 </label>
 
                                 <input
@@ -585,9 +585,9 @@
                                 type="button"
                                 class="botao-remover-serie"
                                 onclick="removerSerie(this)"
-                                title="Excluir série"
+                                title="Excluir sÃ©rie"
                             >
-                                🗑️
+                                ðŸ—‘ï¸
                             </button>
 
                         </div>
@@ -602,7 +602,7 @@
                     class="botao-adicionar-serie"
                     onclick="adicionarSerie('{{ exercicio['id'] }}')"
                 >
-                    ＋ Adicionar série
+                    ï¼‹ Adicionar sÃ©rie
                 </button>
 
             </div>
@@ -611,7 +611,7 @@
 
 
         <!-- ================================================= -->
-        <!-- AÇÕES -->
+        <!-- AÃ‡Ã•ES -->
         <!-- ================================================= -->
 
         <div class="acoes-finais">
@@ -620,14 +620,14 @@
                 type="submit"
                 class="botao-salvar"
             >
-                ✓ Salvar alterações
+                âœ“ Salvar alteraÃ§Ãµes
             </button>
 
             <a
                 href="{{ url_for('aluno_treinos', aluno_id=aluno['id']) }}"
                 class="botao-voltar"
             >
-                ← Cancelar
+                â† Cancelar
             </a>
 
         </div>
@@ -638,7 +638,7 @@
 
 
 <!-- ====================================================== -->
-<!-- JAVASCRIPT DAS SÉRIES -->
+<!-- JAVASCRIPT DAS SÃ‰RIES -->
 <!-- ====================================================== -->
 
 <script>
@@ -707,7 +707,7 @@ function adicionarSerie(exercicioId) {
     linha.innerHTML = `
 
         <div class="numero-serie">
-            Série
+            SÃ©rie
             <span class="numero-visivel">
                 ${numero}
             </span>
@@ -716,7 +716,7 @@ function adicionarSerie(exercicioId) {
         <div class="campo-repeticoes">
 
             <label>
-                Repetições
+                RepetiÃ§Ãµes
             </label>
 
             <input
@@ -733,9 +733,9 @@ function adicionarSerie(exercicioId) {
             type="button"
             class="botao-remover-serie"
             onclick="removerSerie(this)"
-            title="Excluir série"
+            title="Excluir sÃ©rie"
         >
-            🗑️
+            ðŸ—‘ï¸
         </button>
 
     `;

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gerenciar Assinatura | MOVYLA Training</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='movyla.css') }}">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    ellipse at 85% 0%,
+                    rgba(25, 135, 84, 0.20),
+                    transparent 42%
+                ),
+                radial-gradient(
+                    ellipse at 0% 75%,
+                    rgba(25, 135, 84, 0.08),
+                    transparent 45%
+                ),
+                var(--movyla-black);
+        }
+
+        .assinatura-container {
+            width: 92%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 35px 0 75px;
+        }
+
+        .voltar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--movyla-muted);
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        .marca {
+            color: #6fd89d;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .titulo {
+            font-size: clamp(28px, 5vw, 38px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            color: var(--movyla-muted);
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .assinatura-card {
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(27, 33, 30, 0.98),
+                    rgba(16, 20, 18, 0.98)
+                );
+            border: 1px solid var(--movyla-border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow:
+                0 20px 65px rgba(0, 0, 0, 0.35),
+                0 0 45px rgba(25, 135, 84, 0.04);
+        }
+
+        .personal-topo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 28px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--movyla-border);
+        }
+
+        .avatar {
+            width: 58px;
+            height: 58px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            background: linear-gradient(
+                135deg,
+                #198754,
+                #0e5031
+            );
+            color: white;
+            font-size: 25px;
+            font-weight: 800;
+            box-shadow: 0 8px 22px rgba(25, 135, 84, 0.20);
+        }
+
+        .personal-nome {
+            font-size: 21px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .personal-usuario {
+            color: var(--movyla-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .secao-titulo {
+            color: #75dca2;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 9px;
+            color: #dce5df;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .campo input,
+        .campo textarea {
+            width: 100%;
+            margin: 0;
+            padding: 15px;
+            background: #0d120f;
+            border: 1px solid #344139;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-family: inherit;
+            transition: 0.2s ease;
+        }
+
+        .campo input:focus,
+        .campo textarea:focus {
+            border-color: #39b879;
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
+        }
+
+        .linha {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .divisor {
+            height: 1px;
+            background: var(--movyla-border);
+            margin: 28px 0;
+        }
+
+        .isencao-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(25, 135, 84, 0.09);
+            border: 1px solid rgba(25, 135, 84, 0.28);
+            border-radius: 15px;
+            margin-bottom: 22px;
+        }
+
+        .isencao-card input {
+            width: 21px;
+            height: 21px;
+            flex-shrink: 0;
+            margin: 2px 0 0;
+            accent-color: #198754;
+        }
+
+        .isencao-card label {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #b7e9cb;
+            cursor: pointer;
+        }
+
+        .isencao-descricao {
+            color: var(--movyla-muted);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
+
+        .botao-salvar {
+            width: 100%;
+            padding: 17px;
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 13px;
+            background: linear-gradient(
+                135deg,
+                #198754,
+                #12663f
+            );
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(25, 135, 84, 0.18);
+        }
+
+        .botao-salvar:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .botao-salvar:disabled:hover {
+            transform: none;
+            background: linear-gradient(
+                135deg,
+                #198754,
+                #12663f
+            );
+        }
+
+        .aviso {
+            margin-top: 22px;
+            padding: 17px;
+            background: rgba(255, 193, 7, 0.07);
+            border: 1px solid rgba(255, 193, 7, 0.20);
+            border-radius: 12px;
+            color: #e7cb86;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 600px) {
+            .assinatura-container {
+                width: 94%;
+                padding-top: 22px;
+            }
+
+            .assinatura-card {
+                padding: 22px 18px;
+                border-radius: 18px;
+            }
+
+            .linha {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .personal-nome {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="assinatura-container">
+
+    <a class="voltar" href="{{ url_for('personais') }}">
+        ← Voltar para Meus Personais
+    </a>
+
+    <div class="marca">MOVYLA TRAINING</div>
+
+    <h1 class="titulo">Gerenciar assinatura</h1>
+
+    <p class="subtitulo">
+        Personalize o plano, a mensalidade e as condições
+        financeiras deste profissional.
+    </p>
+
+    <div class="assinatura-card">
+
+        <div class="personal-topo">
+            <div class="avatar">
+                {{ personal.nome[0] | upper }}
+            </div>
+
+            <div>
+                <div class="personal-nome">
+                    {{ personal.nome }}
+                </div>
+
+                <div class="personal-usuario">
+                    @{{ personal.usuario }}
+                </div>
+            </div>
+        </div>
+
+        <form method="POST">
+
+            <div class="secao-titulo">
+                Informações do plano
+            </div>
+
+            <div class="campo">
+                <label for="plano">Nome do plano</label>
+                <input
+                    type="text"
+                    id="plano"
+                    name="plano"
+                    value="{{ assinatura.plano if assinatura else 'Personalizado' }}"
+                    required
+                >
+            </div>
+
+            <div class="linha">
+
+                <div class="campo">
+                    <label for="valor_mensal">Mensalidade (R$)</label>
+                    <input
+                        type="number"
+                        id="valor_mensal"
+                        name="valor_mensal"
+                        min="0"
+                        step="0.01"
+                        value="{{ assinatura.valor_mensal if assinatura else '0.00' }}"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="data_inicio">Cliente desde</label>
+                    <input
+                        type="date"
+                        id="data_inicio"
+                        name="data_inicio"
+                        value="{{ assinatura.data_inicio if assinatura and assinatura.data_inicio else '' }}"
+                    >
+                </div>
+
+            </div>
+
+            <div class="campo">
+                <label for="proximo_vencimento">
+                    Próximo vencimento
+                </label>
+                <input
+                    type="date"
+                    id="proximo_vencimento"
+                    name="proximo_vencimento"
+                    value="{{ assinatura.proximo_vencimento if assinatura and assinatura.proximo_vencimento else '' }}"
+                >
+            </div>
+
+            <div class="divisor"></div>
+
+            <div class="secao-titulo">
+                Condições especiais
+            </div>
+
+            <div class="isencao-card">
+                <input
+                    type="checkbox"
+                    id="isento"
+                    name="isento"
+                    {% if assinatura and assinatura.isento %}checked{% endif %}
+                >
+
+                <div>
+                    <label for="isento">
+                        Isentar este personal da mensalidade
+                    </label>
+
+                    <div class="isencao-descricao">
+                        Ideal para parceiros comerciais ou
+                        profissionais com condições especiais.
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="motivo_isencao">
+                    Motivo da isenção
+                </label>
+
+                <input
+                    type="text"
+                    id="motivo_isencao"
+                    name="motivo_isencao"
+                    placeholder="Ex.: Parceiro que indica novos clientes"
+                    value="{{ assinatura.motivo_isencao if assinatura and assinatura.motivo_isencao else '' }}"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="observacoes">Observações</label>
+
+                <textarea
+                    id="observacoes"
+                    name="observacoes"
+                    rows="4"
+                    placeholder="Informações adicionais sobre a assinatura"
+                >{{ assinatura.observacoes if assinatura and assinatura.observacoes else '' }}</textarea>
+            </div>
+
+            <button
+    class="botao-salvar"
+    type="submit"
+>
+    💾 Salvar assinatura
+</button>
+
+        </form>
+
+        <div class="aviso">
+            O visual premium está pronto.
+            O salvamento das assinaturas será habilitado
+            na próxima etapa.
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

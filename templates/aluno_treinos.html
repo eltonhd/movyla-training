@@ -160,7 +160,7 @@
         {% endif %}
 
         <div class="info-aluno">
-            <h1>🏋️ Treinos de {{ aluno['nome'] }}</h1>
+            <h1>ðŸ‹ï¸ Treinos de {{ aluno['nome'] }}</h1>
             <p>{{ aluno['usuario'] }}</p>
         </div>
 
@@ -170,17 +170,17 @@
 
         <a href="{{ url_for('atribuir_treino', aluno_id=aluno['id']) }}"
            class="btn">
-            ＋ Atribuir treino
+            ï¼‹ Atribuir treino
         </a>
 
         <a href="{{ url_for('alunos') }}"
            class="btn">
-            ← Voltar
+            â† Voltar
         </a>
 
         <a href="{{ url_for('inicio') }}"
            class="btn">
-            🏠 Início
+            ðŸ  InÃ­cio
         </a>
 
     </div>
@@ -191,7 +191,7 @@
 
             <div class="treino-card">
 
-                <h2>🏋️ {{ treino['nome'] }}</h2>
+                <h2>ðŸ‹ï¸ {{ treino['nome'] }}</h2>
 
                 {% if treino['descricao'] %}
                     <div class="descricao">
@@ -200,19 +200,19 @@
                 {% endif %}
 
                 {% if treino['dia_semana'] == 1 %}
-                    <div class="dia">📅 Segunda-feira</div>
+                    <div class="dia">ðŸ“… Segunda-feira</div>
                 {% elif treino['dia_semana'] == 2 %}
-                    <div class="dia">📅 Terça-feira</div>
+                    <div class="dia">ðŸ“… TerÃ§a-feira</div>
                 {% elif treino['dia_semana'] == 3 %}
-                    <div class="dia">📅 Quarta-feira</div>
+                    <div class="dia">ðŸ“… Quarta-feira</div>
                 {% elif treino['dia_semana'] == 4 %}
-                    <div class="dia">📅 Quinta-feira</div>
+                    <div class="dia">ðŸ“… Quinta-feira</div>
                 {% elif treino['dia_semana'] == 5 %}
-                    <div class="dia">📅 Sexta-feira</div>
+                    <div class="dia">ðŸ“… Sexta-feira</div>
                 {% elif treino['dia_semana'] == 6 %}
-                    <div class="dia">📅 Sábado</div>
+                    <div class="dia">ðŸ“… SÃ¡bado</div>
                 {% else %}
-                    <div class="dia">📅 Dia não definido</div>
+                    <div class="dia">ðŸ“… Dia nÃ£o definido</div>
                 {% endif %}
 
                 <div class="acoes-treino">
@@ -223,7 +223,7 @@
                         treino_id=treino['id']
                     ) }}"
                        class="btn-iniciar">
-                        ▶️ Iniciar treino
+                        â–¶ï¸ Iniciar treino
                     </a>
 
                     <a href="{{ url_for(
@@ -232,7 +232,7 @@
                         treino_id=treino['id']
                     ) }}"
                        class="btn-editar">
-                        ✏️ Editar
+                        âœï¸ Editar
                     </a>
 
                     <form method="POST"
@@ -246,7 +246,7 @@
 
                         <button type="submit"
                                 class="btn-excluir">
-                            🗑️ Excluir
+                            ðŸ—‘ï¸ Excluir
                         </button>
 
                     </form>
@@ -261,15 +261,15 @@
 
         <div class="vazio">
 
-            <h2>📋 Nenhum treino atribuído</h2>
+            <h2>ðŸ“‹ Nenhum treino atribuÃ­do</h2>
 
             <p>
-                Este aluno ainda não possui nenhum treino atribuído.
+                Este aluno ainda nÃ£o possui nenhum treino atribuÃ­do.
             </p>
 
             <a href="{{ url_for('atribuir_treino', aluno_id=aluno['id']) }}"
                class="btn">
-                ＋ Atribuir primeiro treino
+                ï¼‹ Atribuir primeiro treino
             </a>
 
         </div>

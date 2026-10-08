@@ -1,730 +1,873 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOVYLA Training | Dashboard</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+--bg: #090d0b;
+--surface: #141b16;
+--surface-light: #1b261e;
+--border: #29372d;
+--green: #48e078;
+--green-dark: #148a48;
+--text: #f5f8f5;
+--muted: #a6b4a9;
+}
+body {
+margin: 0;
+background:
+radial-gradient(circle at 85% 5%, rgba(42, 171, 86, .15), transparent 34%),
+radial-gradient(circle at 0% 55%, rgba(29, 92, 50, .09), transparent 38%),
+var(--bg);
+color: var(--text);
+font-family: Arial, Helvetica, sans-serif;
+}
+.container {
+width: 100%;
+max-width: none;
+margin: 0;
+padding: 0;
+}
+.dashboard {
+max-width: 1180px;
+margin: auto;
+padding: 30px 24px 70px;
+}
+.topbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 16px;
+padding-bottom: 25px;
+margin-bottom: 35px;
+border-bottom: 1px solid var(--border);
+}
+.brand {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.brand-mark {
+width: 42px;
+height: 42px;
+border-radius: 13px;
+background: linear-gradient(145deg, #54f58a, #168a47);
+display: grid;
+place-items: center;
+color: #07130b;
+font-size: 23px;
+font-weight: 900;
+box-shadow: 0 8px 25px rgba(36, 208, 96, .18);
+}
+.brand-name {
+font-size: 20px;
+font-weight: 900;
+letter-spacing: 1px;
+color: white;
+}
+.brand-name span {
+color: var(--green);
+}
+.brand-sub {
+color: var(--muted);
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 2.6px;
+}
+.topbar-right {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+.role-pill {
+padding: 8px 13px;
+border: 1px solid rgba(72, 224, 120, .28);
+border-radius: 50px;
+background: rgba(72, 224, 120, .08);
+color: var(--green);
+font-size: 11px;
+font-weight: 800;
+letter-spacing: 1px;
+text-transform: uppercase;
+}
+.avatar {
+width: 48px;
+height: 48px;
+border-radius: 50%;
+display: grid;
+place-items: center;
+background: #245e39;
+color: white;
+font-size: 20px;
+font-weight: 800;
+overflow: hidden;
+border: 2px solid rgba(72, 224, 120, .5);
+flex-shrink: 0;
+}
+.avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+.welcome {
+margin-bottom: 28px;
+}
+.eyebrow {
+display: flex;
+align-items: center;
+gap: 9px;
+color: var(--green);
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 2px;
+text-transform: uppercase;
+margin-bottom: 12px;
+}
+.eyebrow::before {
+content: "";
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(--green);
+box-shadow: 0 0 12px rgba(72, 224, 120, .6);
+}
+.welcome h1 {
+margin: 0;
+font-size: clamp(28px, 4vw, 43px);
+font-weight: 900;
+letter-spacing: -1.4px;
+line-height: 1.15;
+color: white;
+}
+.welcome h1 span {
+color: var(--green);
+}
+.welcome p {
+margin: 12px 0 0;
+color: var(--muted);
+font-size: 15px;
+line-height: 1.6;
+}
+.hero {
+position: relative;
+overflow: hidden;
+background:
+radial-gradient(circle at 88% 48%, rgba(72, 224, 120, .21), transparent 35%),
+linear-gradient(115deg, #1c3824, #121d16 65%, #102216);
+border: 1px solid #34533c;
+border-radius: 26px;
+padding: 38px;
+margin-bottom: 35px;
+}
+.hero::after {
+content: "";
+position: absolute;
+width: 210px;
+height: 210px;
+border: 35px solid rgba(72, 224, 120, .055);
+border-radius: 50%;
+right: -65px;
+top: -80px;
+pointer-events: none;
+}
+.hero-label {
+display: inline-block;
+color: #07130b;
+background: var(--green);
+padding: 7px 13px;
+border-radius: 50px;
+font-size: 10px;
+font-weight: 900;
+letter-spacing: 1.7px;
+text-transform: uppercase;
+margin-bottom: 20px;
+}
+.hero h2 {
+position: relative;
+z-index: 1;
+color: white;
+font-size: clamp(27px, 3.8vw, 42px);
+letter-spacing: -1px;
+line-height: 1.15;
+margin: 0 0 14px;
+max-width: 650px;
+}
+.hero p {
+position: relative;
+z-index: 1;
+color: #c0d0c3;
+max-width: 570px;
+margin: 0;
+line-height: 1.7;
+font-size: 15px;
+}
+.hero-action {
+position: relative;
+z-index: 1;
+display: inline-flex;
+align-items: center;
+gap: 10px;
+margin-top: 25px;
+padding: 13px 21px;
+background: var(--green);
+color: #07130b;
+border-radius: 13px;
+font-size: 14px;
+font-weight: 900;
+text-decoration: none;
+transition: .2s;
+}
+.hero-action:hover {
+background: #75f59d;
+color: #07130b;
+text-decoration: none;
+transform: translateY(-2px);
+}
+/* BOTÃO PREMIUM DO PERSONAL */
 
-    <title>MOVYLA Training</title>
+.hero-action-personal {
+    background: linear-gradient(
+        105deg,
+        #a5eb2c 0%,
+        #42df79 55%,
+        #23cba8 100%
+    );
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='movyla.css') }}"
-    >
+    color: #07130b;
+    box-shadow: 0 5px 18px rgba(66, 223, 121, 0.18);
+}
 
-    <style>
+.hero-action-personal:hover {
+    background: linear-gradient(
+        105deg,
+        #b8f44c 0%,
+        #59ed8d 55%,
+        #35dfb8 100%
+    );
 
-        body {
-            background:
-                radial-gradient(
-                    circle at top right,
-                    rgba(25, 135, 84, 0.14),
-                    transparent 35%
-                ),
-                #080b0a;
-        }
+    color: #07130b;
+    box-shadow: 0 8px 24px rgba(66, 223, 121, 0.28);
+}
+.section-heading {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+margin: 0 0 20px;
+}
+.section-heading h2 {
+margin: 0;
+font-size: 22px;
+font-weight: 900;
+letter-spacing: -.5px;
+color: white;
+}
+.section-heading span {
+color: var(--muted);
+font-size: 12px;
+}
+.cards {
+display: grid;
+grid-template-columns: repeat(4, minmax(0, 1fr));
+gap: 16px;
+margin-bottom: 36px;
+}
+.feature-card {
+min-width: 0;
+display: flex;
+flex-direction: column;
+min-height: 205px;
+padding: 23px;
+border-radius: 21px;
+border: 1px solid var(--border);
+background:
+    radial-gradient(circle at 90% 15%, rgba(72, 224, 120, 0.12), transparent 55%),
+    linear-gradient(115deg, #1c3824, #121d16 65%, #102216);
+color: white;
+text-decoration: none;
+transition: .22s;
+}
+a.feature-card:hover {
+transform: translateY(-5px);
+border-color: var(--green);
+background: linear-gradient(155deg, #223a29, #142018);
+text-decoration: none;
+box-shadow: 0 16px 35px rgba(0, 0, 0, .2);
+}
+.feature-icon {
+width: 53px;
+height: 53px;
+display: grid;
+place-items: center;
+border-radius: 15px;
+background: rgba(72, 224, 120, .11);
+font-size: 27px;
+margin-bottom: 24px;
+}
+.feature-card h3 {
+margin: 0 0 8px;
+color: white;
+font-size: 18px;
+font-weight: 800;
+}
+.feature-card p {
+margin: 0;
+color: var(--muted);
+font-size: 13px;
+line-height: 1.55;
+}
+.feature-arrow {
+margin-top: auto;
+padding-top: 16px;
+color: var(--green);
+font-size: 19px;
+font-weight: 800;
+}
+.feature-note {
+margin-top: auto;
+padding-top: 15px;
+color: #86ab90;
+font-size: 11px;
+font-weight: 700;
+}
+.profile-section {
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 20px;
+padding: 25px 28px;
+border: 1px solid var(--border);
+border-radius: 22px;
+background: #141b16;
+}
+.profile-title {
+font-size: 17px;
+font-weight: 800;
+color: white;
+margin-bottom: 6px;
+}
+.profile-description {
+font-size: 13px;
+color: var(--muted);
+}
+.photo-form {
+display: flex;
+align-items: center;
+flex-wrap: wrap;
+gap: 10px;
+}
+.photo-form input[type="file"] {
+width: auto;
+max-width: 100%;
+margin: 0;
+padding: 10px;
+font-size: 12px;
+border-radius: 10px;
+background: #0e1510;
+}
+.photo-form button {
+margin: 0;
+padding: 12px 17px;
+border-radius: 11px;
+background: var(--green);
+color: #07130b;
+font-weight: 900;
+}
+.photo-form button:hover {
+background: #75f59d;
+color: #07130b;
+}
+.footer {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 15px;
+margin-top: 35px;
+padding-top: 23px;
+border-top: 1px solid var(--border);
+}
+.footer-brand {
+color: #728778;
+font-size: 12px;
+}
+.logout {
+color: #b8c4ba;
+font-size: 13px;
+text-decoration: none;
+}
+.logout:hover {
+color: #ff8888;
+text-decoration: none;
+}
+@media (max-width: 950px) {
+.cards {
+grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+@media (max-width: 600px) {
+.dashboard {
+padding: 20px 16px 45px;
+}
+.topbar {
+margin-bottom: 28px;
+}
+.brand-name {
+font-size: 17px;
+}
+.brand-sub {
+font-size: 9px;
+}
+.role-pill {
+display: none;
+}
+.avatar {
+width: 43px;
+height: 43px;
+}
+.welcome h1 {
+letter-spacing: -.8px;
+}
+.hero {
+padding: 27px 23px;
+border-radius: 22px;
+}
+.cards {
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 12px;
+}
+.feature-card {
+min-height: 190px;
+padding: 17px;
+border-radius: 17px;
+}
+.feature-icon {
+width: 45px;
+height: 45px;
+font-size: 23px;
+margin-bottom: 20px;
+}
+.feature-card h3 {
+font-size: 15px;
+}
+.feature-card p {
+font-size: 12px;
+}
+.profile-section {
+padding: 22px;
+}
+.photo-form {
+width: 100%;
+}
+.photo-form input[type="file"],
+.photo-form button {
+width: 100%;
+}
+}
+@media (max-width: 360px) {
+.cards {
+grid-template-columns: 1fr;
+}
+}
 
-        .dashboard {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 20px 60px;
-        }
+/* MOVYLA Premium dashboard v2 */
+:root { --green:#43e581; --lime:#b7f657; }
+.dashboard {max-width:1480px;padding:22px 35px 70px;}
+.topbar {margin-bottom:26px;padding-bottom:17px;}
+.brand-name {font-size:25px;letter-spacing:.5px;}
+.brand-name span {color:#36dca1;}
+.topbar-logout {display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border:1px solid #35513d;background:#13241b;color:#e0eae2;border-radius:13px;font-size:14px;font-weight:700;text-decoration:none;transition:.2s;}
+.topbar-logout:hover {color:#ffa4a4;background:#301b20;border-color:#b34c57;text-decoration:none;}
+.welcome {margin-bottom:30px;}
+.welcome-user {gap:32px !important;}
+.welcome h1 {font-size:clamp(30px,4vw,48px);}
+.welcome h1 span {color:#b7f657 !important;}
+.hero {padding:45px 55px;min-height:300px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(90deg,#092a1c 0%,#071c14 50%,rgba(4,22,14,.76) 73%,rgba(4,25,15,.44) 100%),url("{{ url_for('static', filename='movyla_banner_halteres.webp') }}") right center / auto 100% no-repeat,#09261a;border-color:#185d40;}
+/* AJUSTE PREMIUM DO BANNER */
 
-        .topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 35px;
-        }
+.hero {
+    background-image:
+        linear-gradient(
+            90deg,
+            #092a1c 0%,
+            rgba(7, 28, 20, 0.98) 35%,
+            rgba(4, 22, 14, 0.55) 70%,
+            rgba(4, 25, 15, 0.15) 100%
+        ),
+        url("/static/movyla_banner_halteres.webp");
 
-        .marca {
-            color: #198754;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 2px;
-        }
+    background-position: center, right center;
+    background-size: cover, auto 100%;
+    background-repeat: no-repeat;
+}
 
-        .saudacao {
-            margin-top: 8px;
-        }
+/* ETIQUETA COM FORMATO DE CÁPSULA */
 
-        .saudacao h1 {
-            margin: 0;
-            font-size: 30px;
-        }
+.hero-label {
+    display: inline-flex;
+    align-self: flex-start;
+    width: auto;
+    max-width: 100%;
+}
+.hero h2 {max-width:800px;text-transform:uppercase;font-size:clamp(27px,3.4vw,46px);}
+.hero p {max-width:650px;}
+.hero-action-personal {background:linear-gradient(110deg,#c4fa59,#9cef45);width:fit-content;}
+.cards {gap:18px;}
+.feature-card {min-height:195px;border-color:#244536;background:linear-gradient(140deg,#0e2c21,#0b1714);}
+.feature-card:nth-child(2) {background:linear-gradient(140deg,#092c35,#0b171e);border-color:#205064;}
+.feature-card:nth-child(3) {background:linear-gradient(140deg,#241b39,#10141d);border-color:#4a326b;}
+.feature-card:nth-child(4) {background:linear-gradient(140deg,#322211,#1b1711);border-color:#66401c;}
+.feature-icon {background:rgba(33,225,144,.12);color:#27e2a3;}
+.feature-card:nth-child(2) .feature-icon {background:rgba(42,157,255,.15);color:#38aaff;}
+.feature-card:nth-child(3) .feature-icon {background:rgba(175,101,255,.14);color:#b574ff;}
+.feature-card:nth-child(4) .feature-icon {background:rgba(255,165,37,.14);color:#ffae35;}
+.movyla-stats {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 30px;}
+.movyla-stat {min-height:98px;padding:22px;display:flex;align-items:center;gap:16px;background:linear-gradient(130deg,#101e19,#0c1713);border:1px solid #234333;border-radius:18px;color:#d9eee0;text-decoration:none;}
+.movyla-stat i {width:30px;height:30px;color:#37d79b;flex-shrink:0;}
+.movyla-stat strong {display:block;font-size:19px;color:white;margin-bottom:4px;}
+.movyla-stat small {color:#9eafa4;font-size:12px;}
+.movyla-stat:hover {border-color:#4fe18d;color:white;text-decoration:none;}
+.movyla-subtitle {font-size:13px;color:#9eafa4;margin:-9px 0 22px;}
+.footer {justify-content:center;}
+@media(max-width:950px) {.movyla-stats {grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px) {
+.dashboard {padding:16px 15px 44px;}
+.brand-name {font-size:17px;}
+.topbar-logout {font-size:12px;padding:9px 11px;}
+.topbar-logout span {display:none;}
+.welcome-user {gap:13px !important;align-items:flex-start !important;}
+.welcome-photo {width:86px !important;height:86px !important;}
+.welcome h1 {font-size:clamp(23px,6vw,32px);}
+.welcome p {font-size:12px;}
+.hero {padding:30px 22px;min-height:285px;background-position:right center;}
+.hero h2 {font-size:clamp(24px,6vw,34px);}
+.movyla-stats {gap:10px;}
+.movyla-stat {padding:13px;min-height:88px;gap:9px;}
+.movyla-stat i {width:23px;height:23px;}
+.movyla-stat strong {font-size:13px;}
+.movyla-stat small {font-size:10px;}
+}
 
-        .saudacao p {
-            color: #aeb7b1;
-            margin-top: 8px;
-        }
-
-        .perfil-topo {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: #198754;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 23px;
-            font-weight: 800;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .perfil-topo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .hero {
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(25, 135, 84, 0.18),
-                    rgba(21, 25, 23, 0.96)
-                );
-            border: 1px solid #2a332e;
-            border-radius: 24px;
-            padding: 35px;
-            margin-bottom: 30px;
-        }
-
-        .hero-label {
-            color: #198754;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        .hero h2 {
-            font-size: 32px;
-            margin: 0 0 10px;
-        }
-
-        .hero p {
-            color: #aeb7b1;
-            margin: 0;
-            max-width: 650px;
-            line-height: 1.6;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
-            margin-top: 25px;
-        }
-
-        .card {
-            display: block;
-            text-decoration: none;
-            background: #151a17;
-            border: 1px solid #2a332e;
-            border-radius: 18px;
-            padding: 25px;
-            transition: 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: #198754;
-        }
-
-        .card-icon {
-            font-size: 30px;
-            margin-bottom: 15px;
-        }
-
-        .card h3 {
-            color: #f2f2f2;
-            margin: 0 0 8px;
-        }
-
-        .card p {
-            color: #aeb7b1;
-            margin: 0;
-            line-height: 1.5;
-            font-size: 14px;
-        }
-
-        .secao {
-            margin-top: 35px;
-        }
-
-        .secao-titulo {
-            color: #aeb7b1;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-        }
-
-        .acoes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .acao {
-            display: inline-block;
-            text-decoration: none;
-            padding: 12px 18px;
-            border: 1px solid #2a332e;
-            border-radius: 10px;
-            color: #f2f2f2;
-            background: #151a17;
-        }
-
-        .acao:hover {
-            border-color: #198754;
-        }
-
-        .sair {
-            display: inline-block;
-            margin-top: 35px;
-            color: #aeb7b1;
-            text-decoration: none;
-        }
-
-        .sair:hover {
-            color: #dc3545;
-        }
-
-        .foto-form {
-            margin-top: 20px;
-        }
-
-        .foto-form input {
-            margin-right: 10px;
-        }
-
-        .foto-form button {
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-
-            .dashboard {
-                padding: 25px 15px 45px;
-            }
-
-            .topo {
-                align-items: flex-start;
-            }
-
-            .saudacao h1 {
-                font-size: 24px;
-            }
-
-            .hero {
-                padding: 25px;
-            }
-
-            .hero h2 {
-                font-size: 26px;
-            }
-
-        }
-
-    </style>
-
+</style>
 </head>
 
 <body>
-
 <div class="container">
-
     <main class="dashboard">
 
-        <!-- =====================================================
-             CABEÇALHO
-        ====================================================== -->
-
-        <div class="topo">
-
-            <div>
-
-                <div class="marca">
-                    MOVYLA TRAINING
-                </div>
-
-                <div class="saudacao">
-
-                    <h1>
-                        Olá, {{ session["nome"] }} 👋
-                    </h1>
-
-                    {% if session["tipo"] == "master" %}
-
-                        <p>
-                            Painel administrativo do seu centro de treinamento.
-                        </p>
-
-                    {% elif session["tipo"] == "personal" %}
-
-                        <p>
-                            Gerencie seus alunos e acompanhe seus treinos.
-                        </p>
-
-                    {% else %}
-
-                        <p>
-                            Seu treino. Sua evolução.
-                        </p>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <!-- FOTO / AVATAR -->
-
-            <div class="perfil-topo">
-
-                {% if session.get("foto") %}
-
-                    <img
-                        src="{{ url_for(
-                            'static',
-                            filename='uploads/' + session['foto']
-                        ) }}"
-                        alt="Foto de perfil"
-                    >
-
-                {% else %}
-
-                    {{ session["nome"][0]|upper }}
-
-                {% endif %}
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================================
-             OWNER
-        ====================================================== -->
-
-        {% if session["tipo"] == "master" %}
-
-            <section class="hero">
-
-                <div class="hero-label">
-                    OWNER
-                </div>
-
-                <h2>
-                    Seu centro de treinamento.
-                </h2>
-
-                <p>
-                    Administre seus Personais, Usuários, Treinos e
-                    Exercícios em um único lugar.
-                </p>
-
-            </section>
-
-
-            <div class="cards">
-
-                <!-- 1. PERSONAIS -->
-
-                <a
-                    href="{{ url_for('personais') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        👤
-                    </div>
-
-                    <h3>
-                        Personais
-                    </h3>
-
-                    <p>
-                        Gerencie os profissionais da sua equipe.
-                    </p>
-
-                </a>
-
-
-                <!-- 2. USUÁRIOS -->
-
-                <a
-                    href="{{ url_for('usuarios') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        👥
-                    </div>
-
-                    <h3>
-                        Usuários
-                    </h3>
-
-                    <p>
-                        Gerencie Personais e seus respectivos alunos.
-                    </p>
-
-                </a>
-
-
-                <!-- 3. TREINOS -->
-
-                <a
-                    href="{{ url_for('treinos') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        🏋️
-                    </div>
-
-                    <h3>
-                        Treinos
-                    </h3>
-
-                    <p>
-                        Crie e organize os treinamentos.
-                    </p>
-
-                </a>
-
-
-                <!-- 4. EXERCÍCIOS -->
-
-                <a
-                    href="{{ url_for('inicio') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        💪
-                    </div>
-
-                    <h3>
-                        Exercícios
-                    </h3>
-
-                    <p>
-                        Consulte e organize os exercícios.
-                    </p>
-
-                </a>
-
-            </div>
-
-
-            <!-- FOTO DO OWNER -->
-
-            <div class="secao">
-
-                <div class="secao-titulo">
-                    Meu perfil
-                </div>
-
-                <form
-                    action="{{ url_for('perfil_foto') }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="foto-form"
-                >
-
-                    <input
-                        type="file"
-                        name="foto"
-                        accept=".jpg,.jpeg,.png,.webp"
-                    >
-
-                    <button
-                        type="submit"
-                        class="botao-principal"
-                    >
-                        📷 Atualizar foto
-                    </button>
-
-                </form>
-
-            </div>
-
-
-        <!-- =====================================================
-             PERSONAL
-        ====================================================== -->
-
-        {% elif session["tipo"] == "personal" %}
-
-            <section class="hero">
-
-                <div class="hero-label">
-                    PERSONAL
-                </div>
-
-                <h2>
-                    Sua equipe. Seus alunos.
-                </h2>
-
-                <p>
-                    Gerencie seus alunos e prepare os treinamentos
-                    de cada pessoa.
-                </p>
-
-            </section>
-
-
-            <div class="cards">
-
-                <!-- ALUNOS DO PERSONAL -->
-
-                <a
-                    href="{{ url_for('alunos') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        👥
-                    </div>
-
-                    <h3>
-                        Meus alunos
-                    </h3>
-
-                    <p>
-                        Veja e gerencie os alunos sob sua responsabilidade.
-                    </p>
-
-                </a>
-
-
-                <!-- TREINOS -->
-
-                <a
-                    href="{{ url_for('treinos') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        🏋️
-                    </div>
-
-                    <h3>
-                        Meus treinos
-                    </h3>
-
-                    <p>
-                        Prepare e organize os treinos dos seus alunos.
-                    </p>
-
-                </a>
-
-
-                <!-- EVOLUÇÃO -->
-
-                <a
-                    href="{{ url_for('treinos') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        📈
-                    </div>
-
-                    <h3>
-                        Minha evolução
-                    </h3>
-
-                    <p>
-                        Acompanhe o desempenho dos seus alunos.
-                    </p>
-
-                </a>
-
-            </div>
-
-
-            <!-- FOTO DO PERSONAL -->
-
-            <div class="secao">
-
-                <div class="secao-titulo">
-                    Meu perfil
-                </div>
-
-                <form
-                    action="{{ url_for('perfil_foto') }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="foto-form"
-                >
-
-                    <input
-                        type="file"
-                        name="foto"
-                        accept=".jpg,.jpeg,.png,.webp"
-                    >
-
-                    <button
-                        type="submit"
-                        class="botao-principal"
-                    >
-                        📷 Atualizar foto
-                    </button>
-
-                </form>
-
-            </div>
-
-
-        <!-- =====================================================
-             ALUNO
-        ====================================================== -->
-
-        {% else %}
-
-            <section class="hero">
-
-                <div class="hero-label">
-                    SEU TREINO
-                </div>
-
-                <h2>
-                    Hora de treinar. 💪
-                </h2>
-
-                <p>
-                    Acesse seus treinos, registre suas cargas
-                    e acompanhe sua evolução.
-                </p>
-
-            </section>
-
-
-            <div class="cards">
-
-                <a
-                    href="{{ url_for('treinos') }}"
-                    class="card"
-                >
-
-                    <div class="card-icon">
-                        🏋️
-                    </div>
-
-                    <h3>
-                        Meus treinos
-                    </h3>
-
-                    <p>
-                        Veja os treinos preparados para você.
-                    </p>
-
-                </a>
-
-
-                <div class="card">
-
-                    <div class="card-icon">
-                        📈
-                    </div>
-
-                    <h3>
-                        Minha evolução
-                    </h3>
-
-                    <p>
-                        Acompanhe suas cargas, repetições e progresso.
-                    </p>
-
-                </div>
-
-
-                <div class="card">
-
-                    <div class="card-icon">
-                        🎯
-                    </div>
-
-                    <h3>
-                        Próxima meta
-                    </h3>
-
-                    <p>
-                        Evolua suas cargas treino após treino.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <!-- FOTO DO ALUNO -->
-
-            <div class="secao">
-
-                <div class="secao-titulo">
-                    Meu perfil
-                </div>
-
-                <form
-                    action="{{ url_for('perfil_foto') }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="foto-form"
-                >
-
-                    <input
-                        type="file"
-                        name="foto"
-                        accept=".jpg,.jpeg,.png,.webp"
-                    >
-
-                    <button
-                        type="submit"
-                        class="botao-principal"
-                    >
-                        📷 Atualizar foto
-                    </button>
-
-                </form>
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- =====================================================
-             SAIR
-        ====================================================== -->
-
-        <a
-            href="{{ url_for('logout') }}"
-            class="sair"
+<header class="topbar">
+<div class="brand">
+    <img
+    src="{{ url_for('static', filename='logo_movyla_nova.png') }}"
+    alt="Logo MOVYLA"
+    style="width: 65px; height: 65px; object-fit: contain; border-radius: 10px;"
+>
+    <div>
+        <div class="brand-name">MOVYLA <span>TRAINING</span></div>
+        <div class="brand-sub">MOVE YOUR LIMITS</div>
+    </div>
+</div>
+<a class="topbar-logout" href="{{ url_for('logout') }}" title="Sair da conta"><i data-lucide="log-out" style="width:18px;height:18px"></i><span>Sair</span></a>
+</header>
+<section class="welcome">
+
+<div class="eyebrow">Bem-vindo ao MOVYLA</div>
+<div class="welcome-user" style="
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 20px;
+">
+
+    <div style="
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+">
+
+    <label for="nova-foto-perfil" class="welcome-photo" title="Alterar foto de perfil" style="
+        cursor: pointer;
+        width: 115px;
+        height: 115px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #a5eb2c;
+        background: #245e39;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 800;
+    ">
+        {% if session.get("foto") %}
+        <img
+            src="{{ url_for('static', filename='uploads/' + session['foto']) }}"
+            alt="Foto de perfil"
+            style="width: 100%; height: 100%; object-fit: cover;"
         >
-            Sair da conta
-        </a>
+        {% else %}
+        {{ session["nome"][0]|upper }}
+        {% endif %}
+    </label>
 
-    </main>
+    <label for="nova-foto-perfil" title="Alterar foto de perfil" style="
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 9px;
+        background: rgba(67, 229, 129, 0.12);
+        color: #43e581;
+        border: 1px solid rgba(67, 229, 129, 0.2);
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    ">
+        <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+        EDITAR FOTO
+    </label>
+
+    <form action="{{ url_for('perfil_foto') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+        <input id="nova-foto-perfil" type="file" name="foto" accept=".jpg,.jpeg,.png,.webp" onchange="if (this.files.length) this.form.submit();">
+    </form>
 
 </div>
 
-</body>
+    <div>
+        <div style="
+    display: inline-block;
+    color: #43e581;
+    background: rgba(67, 229, 129, 0.12);
+    border: 1px solid rgba(67, 229, 129, 0.15);
+    border-radius: 50px;
+    padding: 7px 13px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+">
+            {% if session["tipo"] == "master" %}
+                ADMINISTRADOR
+            {% elif session["tipo"] == "personal" %}
+                PERSONAL TRAINER
+            {% else %}
+                ALUNO
+            {% endif %}
+        </div>
 
+                <h1 style="margin: 0;">
+            Olá, <span style="color: #a5eb2c;">{{ session["nome"] }}</span>
+            {% if session["tipo"] == "personal" %}🚀{% else %}👋{% endif %}
+        </h1>
+
+        {% if session["tipo"] == "master" %}
+
+        <p>Seu centro de treinamento, organizado em um só lugar.</p>
+
+        {% elif session["tipo"] == "personal" %}
+
+        <p>
+            <i data-lucide="trending-up"
+               style="color: #43e581; width: 20px; height: 20px;
+                      vertical-align: middle; margin-right: 8px;"></i>
+            Seu trabalho inspira. Seus resultados transformam.
+        </p>
+
+        {% else %}
+
+        <p>Seu próximo resultado começa com o treino de hoje.</p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</section>
+{% if session["tipo"] == "master" %}
+<section class="hero">
+<div class="hero-label">Painel administrativo</div>
+<h2>Gerencie sua plataforma. Evolua seu negócio.</h2>
+<p>
+Organize profissionais, usuários, treinos e exercícios
+em um ambiente moderno e centralizado.
+</p>
+<a class="hero-action hero-action-personal" href="{{ url_for('personais') }}">
+Gerenciar personais <span aria-hidden="true">→</span>
+</a>
+</section>
+<!-- INDICADORES DO ADMINISTRADOR -->
+
+<div class="movyla-stats">
+
+    <a href="{{ url_for('personais') }}" class="movyla-stat">
+        <i data-lucide="user-round"></i>
+        <div>
+            <strong>{{ total_personais }}</strong>
+            <small>Personais ativos</small>
+        </div>
+    </a>
+
+    <a href="{{ url_for('usuarios') }}" class="movyla-stat">
+        <i data-lucide="users-round"></i>
+        <div>
+            <strong>{{ total_alunos }}</strong>
+            <small>Alunos ativos</small>
+        </div>
+    </a>
+
+    <a href="{{ url_for('treinos') }}" class="movyla-stat">
+        <i data-lucide="dumbbell"></i>
+        <div>
+            <strong>{{ total_treinos }}</strong>
+            <small>Treinos cadastrados</small>
+        </div>
+    </a>
+
+    <a href="{{ url_for('exercicios') }}" class="movyla-stat">
+        <i data-lucide="biceps-flexed"></i>
+        <div>
+            <strong>{{ total_exercicios }}</strong>
+            <small>Exercícios cadastrados</small>
+        </div>
+    </a>
+
+</div>
+<div class="section-heading">
+<h2>Seu painel</h2>
+<span>Gestão MOVYLA</span>
+</div>
+<div class="cards">
+<a href="{{ url_for('personais') }}" class="feature-card">
+<div class="feature-icon">
+    <i data-lucide="user-round"></i>
+</div>
+<h3>Personais</h3>
+<p>Gerencie os profissionais da sua equipe.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('usuarios') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="users-round"></i></div>
+<h3>Usuários</h3>
+<p>Gerencie personais e seus respectivos alunos.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('treinos') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="dumbbell"></i></div>
+<h3>Treinos</h3>
+<p>Crie e organize os treinamentos.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('exercicios') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="biceps-flexed"></i></div><h3>Exercícios</h3>
+<p>Consulte e organize a biblioteca de exercícios.</p>
+<div class="feature-arrow">↗</div>
+</a>
+</div>
+{% elif session["tipo"] == "personal" %}
+<section class="hero">
+<div class="hero-label">Personal trainer</div>
+<h2>Seus alunos. Sua metodologia. Seus resultados.</h2>
+<p>
+Gerencie sua equipe de alunos, organize os treinos
+e acompanhe a evolução de cada pessoa.
+</p>
+<a class="hero-action hero-action-personal" href="{{ url_for('alunos') }}">
+Ver meus alunos <span aria-hidden="true">→</span>
+</a>
+</section>
+<div class="movyla-stats">
+<a class="movyla-stat" href="{{ url_for('alunos') }}"><i data-lucide="users-round"></i><div><strong>Meus alunos</strong><small>Acompanhar alunos</small></div></a>
+<a class="movyla-stat" href="{{ url_for('treinos') }}"><i data-lucide="circle-check-big"></i><div><strong>Treinos</strong><small>Gerenciar treinos</small></div></a>
+<a class="movyla-stat" href="{{ url_for('exercicios') }}"><i data-lucide="chart-no-axes-combined"></i><div><strong>Exercícios</strong><small>Biblioteca de exercícios</small></div></a>
+<a class="movyla-stat" href="{{ url_for('alunos') }}"><i data-lucide="calendar-days"></i><div><strong>Acompanhamento</strong><small>Visualizar alunos</small></div></a>
+</div>
+<div class="section-heading">
+<h2>Ações rápidas</h2>
+<span>Tudo o que você precisa para seu dia</span>
+</div>
+<div class="cards">
+<a href="{{ url_for('alunos') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="users-round"></i></div>
+<h3>Meus alunos</h3>
+<p>Veja e gerencie seus alunos.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('treinos') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="dumbbell"></i></div>
+<h3>Meus treinos</h3>
+<p>Prepare e organize os treinos dos seus alunos.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('exercicios') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="biceps-flexed"></i></div>
+<h3>Exercícios</h3>
+<p>Crie e gerencie sua biblioteca de exercícios.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<a href="{{ url_for('treinos') }}" class="feature-card">
+<div class="feature-icon"><i data-lucide="chart-no-axes-combined"></i></div>
+<h3>Minha evolução</h3>
+<p>Acompanhe o desempenho dos seus alunos.</p>
+<div class="feature-arrow">↗</div>
+</a>
+</div>
+{% else %}
+<section class="hero">
+<div class="hero-label">Seu espaço de treino</div>
+<h2>Mais forte a cada treino.</h2>
+<p>
+Acesse seus treinos, registre suas cargas e repetições
+e continue evoluindo em direção às suas metas.
+</p>
+<a class="hero-action" href="{{ url_for('treinos') }}">
+Ver meus treinos <span aria-hidden="true">→</span>
+</a>
+</section>
+<div class="section-heading">
+<h2>Seu desempenho</h2>
+<span>Continue evoluindo</span>
+</div>
+<div class="cards">
+<a href="{{ url_for('treinos') }}" class="feature-card">
+<div class="feature-icon">
+    <i data-lucide="dumbbell"></i>
+</div>
+<h3>Meus treinos</h3>
+<p>Veja os treinos preparados para você.</p>
+<div class="feature-arrow">↗</div>
+</a>
+<div class="feature-card">
+<div class="feature-icon">📈</div>
+<h3>Minha evolução</h3>
+<p>Acompanhe suas cargas, repetições e progresso.</p>
+<div class="feature-note">Resumo de evolução</div>
+</div>
+<div class="feature-card">
+<div class="feature-icon">🎯</div>
+<h3>Próxima meta</h3>
+<p>Evolua suas cargas treino após treino.</p>
+<div class="feature-note">Foco no próximo treino</div>
+</div>
+</div>
+{% endif %}
+
+<footer class="footer">
+<div class="footer-brand">© MOVYLA Training</div>
+
+</footer>
+</main>
+</div>
+<script>
+    lucide.createIcons();
+</script>
+</body>
 </html>

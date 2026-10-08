@@ -299,7 +299,7 @@ MOBILE
 
 @media (max-width: 768px) {
 
-```
+
 .container {
     width: 94%;
     padding-top: 18px;
@@ -320,6 +320,6 @@ input[type="submit"],
 input[type="button"] {
     padding: 9px 12px;
 }
-```
+
 
 }
