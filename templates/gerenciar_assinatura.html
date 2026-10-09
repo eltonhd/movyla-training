@@ -323,9 +323,72 @@
                     required
                 >
             </div>
+            <div class="campo">
+                <label for="tipo_assinatura">
+                    Tipo de assinatura
+                </label>
+
+                <select
+                    id="tipo_assinatura"
+                    name="tipo_assinatura"
+                >
+                    <option value="paga"
+                        {% if not assinatura or (not assinatura.isento and assinatura.tipo_assinatura != 'teste') %}selected{% endif %}>
+                        Assinatura paga
+                    </option>
+
+                    <option value="teste"
+                        {% if assinatura and assinatura.tipo_assinatura == 'teste' %}selected{% endif %}>
+                        Teste gratuito
+                    </option>
+
+                    <option value="isenta"
+                        {% if assinatura and assinatura.isento %}selected{% endif %}>
+                        Parceiro isento
+                    </option>
+                </select>
+            </div>
 
             <div class="linha">
+<div class="linha">
 
+    <div class="campo">
+        <label for="periodo_quantidade">
+            Duração do período
+        </label>
+
+        <input
+            type="number"
+            id="periodo_quantidade"
+            name="periodo_quantidade"
+            min="1"
+            step="1"
+            value="{{ assinatura.periodo_quantidade if assinatura and assinatura.periodo_quantidade else 30 }}"
+        >
+    </div>
+
+    <div class="campo">
+        <label for="periodo_unidade">
+            Unidade
+        </label>
+
+        <select
+            id="periodo_unidade"
+            name="periodo_unidade"
+        >
+            <option value="dias"
+                {% if not assinatura or assinatura.periodo_unidade != 'meses' %}selected{% endif %}>
+                Dias
+            </option>
+
+            <option value="meses"
+                {% if assinatura and assinatura.periodo_unidade == 'meses' %}selected{% endif %}>
+                Meses
+            </option>
+        </select>
+    </div>
+
+</div>
                 <div class="campo">
                     <label for="valor_mensal">Mensalidade (R$)</label>
                     <input
@@ -342,11 +405,13 @@
                 <div class="campo">
                     <label for="data_inicio">Cliente desde</label>
                     <input
-                        type="date"
-                        id="data_inicio"
-                        name="data_inicio"
-                        value="{{ assinatura.data_inicio if assinatura and assinatura.data_inicio else '' }}"
-                    >
+    type="date"
+    id="data_inicio"
+    name="data_inicio"
+    value="{{ assinatura.data_inicio if assinatura and assinatura.data_inicio else hoje }}"
+    onclick="if (this.showPicker) this.showPicker()"
+    style="cursor: pointer;"
+>
                 </div>
 
             </div>
@@ -423,15 +488,201 @@
 
         </form>
 
-        <div class="aviso">
-            O visual premium está pronto.
-            O salvamento das assinaturas será habilitado
-            na próxima etapa.
-        </div>
+
 
     </div>
 
 </div>
+
+{% if request.args.get('salvo') == '1' %}
+
+<div id="confirmacao-assinatura" style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.80);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+">
+
+    <div style="
+        background: #101c17;
+        border: 1px solid #a3f53b;
+        border-radius: 20px;
+        padding: 35px 25px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    ">
+
+        <div style="font-size: 52px; color: #a3f53b;">
+            &#10004;
+        </div>
+
+        <h2>Assinatura salva com sucesso!</h2>
+
+        <p style="color: #cbd5ce; line-height: 1.6;">
+            As informações da assinatura foram
+            registradas no MOVYLA Training.
+        </p>
+
+        <button
+            type="button"
+            onclick="fecharConfirmacaoAssinatura()"
+            style="
+                margin-top: 15px;
+                padding: 13px 60px;
+                background: #a3f53b;
+                color: #07120c;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+            "
+        >
+            OK
+        </button>
+
+    </div>
+</div>
+
+<script>
+function fecharConfirmacaoAssinatura() {
+    window.location.replace("/");
+}
+</script>
+
+{% endif %}
+
+<script>
+(function () {
+    const inicio = document.getElementById("data_inicio");
+    const quantidade = document.getElementById("periodo_quantidade");
+    const unidade = document.getElementById("periodo_unidade");
+    const vencimento = document.getElementById("proximo_vencimento");
+
+    if (!inicio || !quantidade || !unidade || !vencimento) {
+        return;
+    }
+
+    function atualizarVencimento() {
+        if (!inicio.value || !quantidade.value) {
+            vencimento.value = "";
+            return;
+        }
+
+        const qtd = Number(quantidade.value);
+
+        if (!Number.isInteger(qtd) || qtd < 1 || qtd > 3650) {
+            vencimento.value = "";
+            return;
+        }
+
+        const partes = inicio.value.split("-").map(Number);
+        const ano = partes[0];
+        const mes = partes[1];
+        const dia = partes[2];
+
+        let resultado;
+
+        if (unidade.value === "dias") {
+            resultado = new Date(Date.UTC(ano, mes - 1, dia + qtd));
+        } else if (unidade.value === "meses") {
+            const destino = new Date(Date.UTC(ano, mes - 1 + qtd, 1));
+            const ultimoDia = new Date(Date.UTC(
+                destino.getUTCFullYear(),
+                destino.getUTCMonth() + 1,
+                0
+            )).getUTCDate();
+
+            resultado = new Date(Date.UTC(
+                destino.getUTCFullYear(),
+                destino.getUTCMonth(),
+                Math.min(dia, ultimoDia)
+            ));
+        } else {
+            vencimento.value = "";
+            return;
+        }
+
+        vencimento.value = resultado.toISOString().slice(0, 10);
+    }
+
+    inicio.addEventListener("input", atualizarVencimento);
+    inicio.addEventListener("change", atualizarVencimento);
+
+    quantidade.addEventListener("input", atualizarVencimento);
+    quantidade.addEventListener("change", atualizarVencimento);
+
+    unidade.addEventListener("input", atualizarVencimento);
+    unidade.addEventListener("change", atualizarVencimento);
+
+    // Preserva o vencimento antigo ao abrir uma assinatura existente.
+    // Recalcula apenas quando o administrador altera o período.
+    if (!vencimento.value) {
+        atualizarVencimento();
+    }
+})();
+</script>
+
+<script>
+document.addEventListener("keydown", function(event) {
+
+    const confirmacao = document.getElementById(
+        "confirmacao-assinatura"
+    );
+
+    // Se a confirmação estiver aberta, Enter aciona o OK.
+    if (confirmacao) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            fecharConfirmacaoAssinatura();
+        }
+        return;
+    }
+
+    // Durante o preenchimento, Enter avança para o próximo campo.
+    if (event.key !== "Enter" || event.isComposing) {
+        return;
+    }
+
+    const atual = event.target;
+
+    if (!atual.matches("input, select")) {
+        return;
+    }
+
+    const formulario = atual.closest("form");
+
+    if (!formulario) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const campos = Array.from(
+        formulario.querySelectorAll("input, select, textarea")
+    ).filter(function(campo) {
+        return !campo.disabled &&
+               !campo.readOnly &&
+               campo.type !== "hidden" &&
+               campo.type !== "submit" &&
+               campo.tabIndex !== -1 &&
+               campo.getClientRects().length > 0;
+    });
+
+    const indice = campos.indexOf(atual);
+
+    if (indice >= 0 && indice < campos.length - 1) {
+        campos[indice + 1].focus();
+    }
+});
+</script>
 
 </body>
 </html>

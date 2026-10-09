@@ -1,16 +1,21 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOVYLA Training | Login</title>
 
-    <style>
+ <style>
+        :root {
+    --verde: #43e581;
+    --verde-claro: #b7f657;
+    --verde-escuro: #148a48;
+    --texto: #f5f8f5;
+    --cinza: #a6b4a9;
+    --borda: #244536;
+}
+
         * {
             box-sizing: border-box;
         }
@@ -19,302 +24,566 @@
             margin: 0;
             min-height: 100vh;
             min-height: 100dvh;
-            padding: 24px 16px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
             font-family: Arial, Helvetica, sans-serif;
-            color: #ffffff;
-
+            color: var(--texto);
             background:
                 radial-gradient(
-                    circle at 50% 35%,
-                    rgba(24, 112, 76, 0.24),
-                    transparent 55%
+                    ellipse at 15% 10%,
+                    rgba(0, 155, 95, .16),
+                    transparent 45%
                 ),
-                linear-gradient(
-                    135deg,
-                    #020403 0%,
-                    #0b1b14 50%,
-                    #020403 100%
-                );
+                radial-gradient(
+                    ellipse at 90% 90%,
+                    rgba(0, 120, 75, .10),
+                    transparent 42%
+                ),
+                #090d0b;
         }
 
-        /* BRILHO DECORATIVO */
-
+/* EFEITOS DISCRETOS SOBRE O FUNDO */
         body::before {
             content: "";
             position: fixed;
             inset: 0;
-
-            background:
-                radial-gradient(
-                    circle at center,
-                    rgba(25, 135, 84, 0.12),
-                    transparent 65%
-                );
-
             pointer-events: none;
-        }
-
-        /* PAINEL DE LOGIN */
-
-        .login-container {
-            position: relative;
-            z-index: 1;
-
-            width: 100%;
-            max-width: 420px;
-            padding: 36px 34px;
-
+            opacity: .35;
             background:
                 linear-gradient(
-                    145deg,
-                    rgba(13, 22, 18, 0.82),
-                    rgba(5, 10, 8, 0.88)
+                    130deg,
+                    transparent 7%,
+                    rgba(10, 180, 110, .14) 7.1%,
+                    transparent 7.4%
+                ),
+                linear-gradient(
+                    130deg,
+                    transparent 91%,
+                    rgba(10, 180, 110, .12) 91.1%,
+                    transparent 91.4%
                 );
-
-            border: 1px solid
-                rgba(75, 160, 120, 0.28);
-
-            border-radius: 22px;
-
-            box-shadow:
-                0 25px 70px rgba(0, 0, 0, 0.65),
-                0 0 45px rgba(20, 120, 80, 0.08);
-
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
 
-        /* LOGO MOVYLA */
-
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
+        .pagina {
+            position: relative;
+            z-index: 1;
+            width: min(1120px, 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: auto;
+            padding: 36px 28px;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 65px;
+            align-items: center;
         }
 
-        .logo img {
-            display: block;
+        .apresentacao {
             width: 100%;
-            max-width: 300px;
-            height: auto;
-            margin: 0 auto;
-
-            border-radius: 12px;
-
-            filter:
-                drop-shadow(
-                    0 8px 18px rgba(0, 0, 0, 0.4)
-                );
+            max-width: 540px;
+            text-align: center;
         }
 
-        /* CAMPOS */
+        .marca {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .marca img {
+            width: min(380px, 100%);
+            height: auto;
+            display: block;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(36px, 4.2vw, 60px);
+            line-height: 1.12;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+        }
+
+        h1 span {
+            color: var(--verde-claro);
+        }
+
+        .descricao {
+            margin: 20px auto 0;
+            max-width: 450px;
+            color: var(--cinza);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .beneficios {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .beneficio {
+            min-width: 0;
+            padding: 18px 6px;
+            border: 1px solid var(--borda);
+            border-radius: 15px;
+            background: rgba(10, 29, 21, .78);
+            text-align: center;
+        }
+
+        .icone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 38px;
+            margin-bottom: 12px;
+            color: var(--verde-claro);
+        }
+
+        .icone svg {
+            width: 32px;
+            height: 32px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .beneficio strong {
+            display: block;
+            font-size: 10px;
+            letter-spacing: .4px;
+            color: #d3e6da;
+        }
+
+        .login-container {
+            width: 100%;
+            padding: 42px 36px;
+            border: 1px solid var(--borda);
+            border-radius: 25px;
+            background: linear-gradient(
+    140deg,
+    #0e2c21,
+    #0b1714
+);
+            box-shadow:
+                0 25px 75px rgba(0, 0, 0, .50),
+                0 0 45px rgba(5, 145, 80, .06);
+        }
+
+        .login-container h2 {
+            margin: 0 0 30px;
+            text-align: center;
+            font-size: 29px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
 
         label {
             display: block;
-            margin-bottom: 8px;
-
-            font-size: 14px;
-            font-weight: 600;
-            color: #d1dcd5;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .5px;
         }
 
         input {
             display: block;
             width: 100%;
-            padding: 15px;
-            margin-bottom: 22px;
-
-            border: 1px solid
-                rgba(75, 160, 120, 0.12);
-
-            border-radius: 10px;
-
-            background: rgba(35, 45, 41, 0.92);
-            color: white;
-
-            font-family: inherit;
+            padding: 16px 17px;
+            margin-bottom: 23px;
+            border: 1px solid rgba(150, 180, 162, .20);
+            border-radius: 12px;
+            background: #1c2923;
+            color: #fff;
+            font: inherit;
             font-size: 16px;
             outline: none;
-
-            transition:
-                border-color 0.2s ease,
-                background 0.2s ease,
-                box-shadow 0.2s ease;
-        }
-
-        input:focus {
-            background: rgba(43, 55, 50, 0.98);
-            border-color: #39a875;
-
-            box-shadow:
-                0 0 0 3px rgba(45, 140, 95, 0.15);
+            transition: border-color .2s, box-shadow .2s;
         }
 
         input::placeholder {
-            color: #a0aaa4;
+            color: #a6b1ab;
         }
 
-        /* BOTÃO ENTRAR VERDE DEGRADÊ */
+        input:focus {
+            border-color: var(--verde);
+            box-shadow: 0 0 0 3px rgba(18, 217, 135, .14);
+        }
 
         button {
+            display: block;
             width: 100%;
-            padding: 16px;
-
-            border: none;
-            border-radius: 10px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #16a765,
-                    #087744
-                );
-
-            color: #ffffff;
-
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 800;
+            margin-top: 8px;
+            padding: 18px;
+            border: 1px solid rgba(85, 255, 171, .30);
+            border-radius: 12px;
+            background: linear-gradient(
+    110deg,
+    #c4fa59,
+    #9cef45
+);
+color: #07130b;
+            font: inherit;
+            font-size: 17px;
+            font-weight: 900;
             letter-spacing: 1px;
-
             cursor: pointer;
-
-            box-shadow:
-                0 5px 20px rgba(0, 130, 70, 0.2);
-
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease,
-                filter 0.2s ease;
+            box-shadow: 0 12px 32px rgba(0, 150, 85, .18);
+            transition: transform .2s, filter .2s;
         }
 
         button:hover {
             transform: translateY(-2px);
-
-            filter: brightness(1.15);
-
-            box-shadow:
-                0 8px 25px rgba(0, 150, 80, 0.35);
-        }
-
-        button:active {
-            transform: translateY(0);
+            filter: brightness(1.12);
         }
 
         button:focus-visible {
-            outline: 3px solid #8af0b5;
+            outline: 3px solid #b1ffcf;
             outline-offset: 3px;
         }
 
-        /* MENSAGEM DE ERRO */
-
         .erro {
-            margin-bottom: 22px;
             padding: 13px;
-
-            border-radius: 9px;
-
-            border: 1px solid
-                rgba(255, 100, 100, 0.2);
-
-            background: rgba(92, 32, 32, 0.85);
-            color: #ffb3b3;
-
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 100, 100, .3);
+            border-radius: 10px;
+            background: rgba(105, 29, 29, .55);
+            color: #ffb7b7;
             text-align: center;
             font-size: 14px;
         }
 
-        /* VERSÃO PARA CELULARES */
+        .rodape {
+            margin-top: 27px;
+            text-align: center;
+            color: #819a8a;
+            font-size: 11px;
+            letter-spacing: .3px;
+        }
 
-        @media (max-width: 480px) {
+        /* CELULAR E TABLET */
+        @media (max-width: 850px) {
             body {
-                padding: 20px 15px;
+                background:
+                    linear-gradient(
+                        to bottom,
+                        #030807 0%,
+                        #030807 35%,
+                        rgba(3, 8, 7, .96) 55%,
+                        rgba(3, 8, 7, .15) 100%
+                    ),
+                    url("{{ url_for('static', filename='halter_movyla.png') }}")
+                    center bottom / 100% auto no-repeat,
+                    #030807;
+            }
+
+            .pagina {
+                padding-bottom: 0;
             }
 
             .login-container {
-                padding: 30px 23px;
-                border-radius: 18px;
+                margin-bottom: 220px;
+            }
+            .pagina {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 14px;
+                max-width: 480px;
+                padding: 24px 18px 30px;
             }
 
-            .logo img {
-                max-width: 260px;
+            .apresentacao {
+                text-align: center;
+            }
+
+            .marca {
+                justify-content: center;
+                margin-bottom: 12px;
+            }
+
+            .marca img {
+                width: min(205px, 72%);
+            }
+
+            h1 {
+                font-size: clamp(25px, 7vw, 34px);
+                letter-spacing: -.7px;
+                line-height: 1.2;
+            }
+
+            .descricao {
+                display: none;
+            }
+
+            .beneficios {
+                margin-top: 14px;
+                gap: 8px;
+            }
+
+            .beneficio {
+                padding: 13px 3px;
+                border-radius: 12px;
+            }
+
+            .icone {
+                height: 31px;
+                margin-bottom: 8px;
+            }
+
+            .icone svg {
+                width: 27px;
+                height: 27px;
+            }
+
+            .beneficio strong {
+                font-size: 9px;
+                letter-spacing: 0;
+            }
+
+            .login-container {
+                padding: 24px 20px;
+                border-radius: 20px;
+            }
+
+            .login-container h2 {
+                display: none;
+            }
+
+            label {
+                margin-bottom: 8px;
+            }
+
+            input {
+                padding: 14px 15px;
+                margin-bottom: 18px;
+            }
+
+            button {
+                padding: 16px;
+            }
+
+            .rodape {
+                margin-top: 24px;
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .pagina {
+                padding: 18px 12px 24px;
+                gap: 18px;
+            }
+
+            .marca img {
+                width: min(200px, 70%);
+            }
+
+            .beneficio strong {
+                font-size: 8px;
+            }
+
+            .login-container {
+                padding: 20px 15px;
             }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            input,
-            button {
+            button, input {
                 transition: none;
             }
         }
+
+        /* COMPUTADOR: FOTO DO HALTER SOMENTE NA FAIXA INFERIOR */
+        @media (min-width: 851px) {
+            body {
+                background: #090d0b;
+            }
+            body::after {
+                content: "";
+                position: fixed;
+                left: 370px;
+                bottom: 0;
+                width: min(72vw, 1100px);
+                height: 55vh;
+                pointer-events: none;
+                z-index: 0;
+                background: url("{{ url_for('static', filename='halter_movyla.png') }}")
+                            center bottom / cover no-repeat;
+                -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, black 37%),
+    linear-gradient(to right, black 65%, transparent 100%);
+-webkit-mask-composite: source-in;
+
+mask-image:
+    linear-gradient(to bottom, transparent 0%, black 37%),
+    linear-gradient(to right, black 65%, transparent 100%);
+mask-composite: intersect;
+            }
+            .pagina {
+                align-items: start;
+                padding-top: clamp(24px, 5vh, 50px);
+            }
+            .apresentacao {
+                justify-self: center;
+            }
+            .marca {
+                margin-bottom: 20px;
+            }
+            .marca img {
+                width: min(290px, 100%);
+            }
+            h1 {
+                font-size: clamp(32px, 3.3vw, 48px);
+            }
+            .descricao {
+                font-size: 16px;
+                margin-top: 14px;
+            }
+            .beneficios {
+                margin-top: 20px;
+            }
+            .beneficio {
+                padding: 13px 5px;
+            }
+            .login-container {
+                align-self: center;
+                background: linear-gradient(140deg, rgba(14,44,33,.97), rgba(11,23,20,.98));
+            }
+
+        /* AJUSTE DE CENTRALIZAÇÃO — COMPUTADOR */
+@media (min-width: 851px) {
+    .pagina {
+        width: min(1320px, 100%);
+        margin-left: auto;
+        margin-right: auto;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+        gap: 65px;
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+
+    .apresentacao {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .login-container {
+        max-width: 440px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+}
 
     </style>
 </head>
 
 <body>
+    <main class="pagina">
 
-    <div class="login-container">
+        <section class="apresentacao">
 
-        <!-- LOGO PRINCIPAL -->
-
-        <div class="logo">
-            <img
-                src="{{ url_for('static', filename='logo_movyla.png') }}"
-                alt="MOVYLA Training"
-            >
-        </div>
-
-        <!-- MENSAGEM DE ERRO -->
-
-        {% if mensagem %}
-
-            <div class="erro" role="alert">
-                {{ mensagem }}
+            <div class="marca">
+                <img
+                    src="{{ url_for('static', filename='logo_movyla.png') }}"
+                    alt="MOVYLA Training"
+                >
             </div>
 
-        {% endif %}
+            <h1>
+                SUA EVOLUÇÃO<br>
+                <span>COMEÇA AQUI.</span>
+            </h1>
 
-        <!-- FORMULÁRIO DE LOGIN -->
+            <p class="descricao">
+                Treinamento, acompanhamento e resultados
+                em um só lugar.
+            </p>
 
-        <form method="POST">
+            <div class="beneficios">
 
-            <label for="usuario">
-                Usuário
-            </label>
+                <div class="beneficio">
+                    <span class="icone">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11M3.5 12h3M17.5 12h3"/>
+                        </svg>
+                    </span>
+                    <strong>TREINAMENTO</strong>
+                </div>
 
-            <input
-                type="text"
-                id="usuario"
-                name="usuario"
-                placeholder="Digite seu usuário"
-                autocomplete="username"
-                required
-            >
+                <div class="beneficio">
+                    <span class="icone">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 19V5M3 19h18M7 15l4-4 3 2 6-7"/>
+                            <path d="M16 6h4v4"/>
+                        </svg>
+                    </span>
+                    <strong>ACOMPANHAMENTO</strong>
+                </div>
 
-            <label for="senha">
-                Senha
-            </label>
+                <div class="beneficio">
+                    <span class="icone">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/>
+                            <path d="M8 6H5v2a4 4 0 0 0 4 4M16 6h3v2a4 4 0 0 1-4 4"/>
+                            <path d="M12 13v4M9 20h6M8 20h8M9 17h6"/>
+                        </svg>
+                    </span>
+                    <strong>RESULTADOS</strong>
+                </div>
 
-            <input
-                type="password"
-                id="senha"
-                name="senha"
-                placeholder="Digite sua senha"
-                autocomplete="current-password"
-                required
-            >
+            </div>
 
-            <button type="submit">
-                ENTRAR
-            </button>
+        </section>
 
-        </form>
+        <section class="login-container">
 
-    </div>
+            <h2>LOGIN</h2>
 
+            {% if mensagem %}
+                <div class="erro" role="alert">
+                    {{ mensagem }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <label for="usuario">USUÁRIO</label>
+                <input
+                    type="text"
+                    id="usuario"
+                    name="usuario"
+                    placeholder="Digite seu usuário"
+                    autocomplete="username"
+                    required
+                >
+
+                <label for="senha">SENHA</label>
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Digite sua senha"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit">
+                    LOGIN &nbsp; →
+                </button>
+
+            </form>
+
+            <div class="rodape">
+                MOVYLA TRAINING • EVOLUÇÃO EM MOVIMENTO
+            </div>
+
+        </section>
+
+    </main>
 </body>
 </html>

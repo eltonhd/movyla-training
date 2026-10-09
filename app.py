@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
-from datetime import date
+from datetime import date, timedelta
+from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
 import os
@@ -199,6 +200,8 @@ def inicio():
     total_treinos = 0
     total_exercicios = 0
     total_personais = 0
+    alertas_financeiros = []
+    aviso_assinatura_personal = None
 
     # ========================================================
     # OWNER
@@ -238,11 +241,80 @@ def inicio():
 
         total_exercicios = cursor.fetchone()[0]
 
+        # ====================================================
+        # ALERTAS FINANCEIROS DO ADMINISTRADOR
+        # ====================================================
+
+        cursor.execute("""
+            SELECT
+                u.id AS personal_id,
+                u.nome AS personal_nome,
+                a.valor_mensal,
+                a.proximo_vencimento,
+                COALESCE(a.tipo_assinatura, 'paga') AS tipo_assinatura,
+                CASE
+                    WHEN date(a.proximo_vencimento) < date('now', 'localtime')
+                    THEN 'vencida'
+                    ELSE 'vence_amanha'
+                END AS status
+            FROM assinaturas_personais a
+            JOIN usuarios u ON u.id = a.personal_id
+            WHERE u.tipo = 'personal'
+              AND u.ativo = 1
+              AND u.responsavel_id = ?
+              AND COALESCE(a.isento, 0) = 0
+              AND COALESCE(a.tipo_assinatura, 'paga') IN ('paga', 'teste')
+              AND (
+                  date(a.proximo_vencimento) < date('now', 'localtime')
+                  OR date(a.proximo_vencimento) = date('now', 'localtime', '+1 day')
+              )
+            ORDER BY a.proximo_vencimento ASC
+        """, (session["usuario_id"],))
+
+        alertas_financeiros = [
+            dict(linha) for linha in cursor.fetchall()
+        ]
+
     # ========================================================
     # PERSONAL
     # ========================================================
 
     elif usuario_e_personal():
+
+        # ================================================
+        # AVISO DE ASSINATURA DO PERSONAL
+        # ================================================
+
+        cursor.execute("""
+            SELECT
+                tipo_assinatura,
+                proximo_vencimento,
+                isento
+            FROM assinaturas_personais
+            WHERE personal_id = ?
+        """, (session["usuario_id"],))
+
+        assinatura_personal = cursor.fetchone()
+
+        if assinatura_personal:
+
+            tipo = assinatura_personal["tipo_assinatura"]
+            vencimento = assinatura_personal["proximo_vencimento"]
+            isento = assinatura_personal["isento"]
+
+            if not isento and tipo in ("paga", "teste") and vencimento:
+
+                data_vencimento = date.fromisoformat(vencimento)
+                dias_restantes = (data_vencimento - date.today()).days
+
+                if dias_restantes <= 3:
+
+                    aviso_assinatura_personal = {
+                        "tipo": tipo,
+                        "dias_restantes": dias_restantes,
+                        "vencimento": data_vencimento.strftime("%d/%m/%Y")
+                    }
+
 
         cursor.execute("""
             SELECT COUNT(*)
@@ -296,7 +368,9 @@ def inicio():
         total_alunos=total_alunos,
         total_treinos=total_treinos,
         total_exercicios=total_exercicios,
-        total_personais=total_personais
+        total_personais=total_personais,
+        alertas_financeiros=alertas_financeiros,
+        aviso_assinatura_personal=aviso_assinatura_personal
     )
 
 
@@ -4117,6 +4191,43 @@ def editar_exercicio(exercicio_id):
     )
 
 # ============================================================
+# CALCULAR VENCIMENTO DA ASSINATURA
+# ============================================================
+
+def calcular_vencimento(data_inicio, quantidade, unidade):
+
+    inicio = date.fromisoformat(data_inicio)
+
+    quantidade = int(quantidade)
+
+    if quantidade < 1:
+        raise ValueError("Periodo invalido")
+
+    if unidade == "dias":
+        return (
+            inicio + timedelta(days=quantidade)
+        ).isoformat()
+
+    if unidade == "meses":
+
+        total_meses = (
+            inicio.year * 12
+            + inicio.month - 1
+            + quantidade
+        )
+
+        ano = total_meses // 12
+        mes = total_meses % 12 + 1
+
+        ultimo_dia = monthrange(ano, mes)[1]
+
+        dia = min(inicio.day, ultimo_dia)
+
+        return date(ano, mes, dia).isoformat()
+
+    raise ValueError("Unidade de periodo invalida")
+
+# ============================================================
 # GERENCIAR ASSINATURA DO PERSONAL
 # ============================================================
 
@@ -4163,12 +4274,23 @@ def gerenciar_assinatura(personal_id):
 
         plano = request.form.get("plano", "").strip()
         valor_texto = request.form.get("valor_mensal", "").strip()
+        tipo_assinatura = request.form.get(
+            "tipo_assinatura", "paga"
+        ).strip()
+
+        periodo_quantidade = request.form.get(
+            "periodo_quantidade", ""
+        ).strip()
+
+        periodo_unidade = request.form.get(
+            "periodo_unidade", ""
+        ).strip()
         data_inicio = request.form.get("data_inicio", "").strip()
         proximo_vencimento = request.form.get(
             "proximo_vencimento", ""
         ).strip()
 
-        isento = 1 if request.form.get("isento") == "on" else 0
+        isento = 1 if tipo_assinatura == "isenta" else 0
 
         motivo_isencao = request.form.get(
             "motivo_isencao", ""
@@ -4201,6 +4323,28 @@ def gerenciar_assinatura(personal_id):
             for data in (data_inicio, proximo_vencimento):
                 if data:
                     datetime.strptime(data, "%Y-%m-%d")
+            if tipo_assinatura not in ("paga", "teste", "isenta"):
+                raise ValueError("Tipo de assinatura invalido")
+
+            if periodo_unidade not in ("dias", "meses"):
+                raise ValueError("Unidade de periodo invalida")
+
+            quantidade = int(periodo_quantidade)
+
+            if quantidade < 1 or quantidade > 3650:
+                raise ValueError("Quantidade invalida")
+
+            if not data_inicio:
+                raise ValueError("Data de inicio obrigatoria")
+
+            proximo_vencimento = (
+                None if tipo_assinatura == "isenta"
+                else calcular_vencimento(
+                    data_inicio,
+                    quantidade,
+                    periodo_unidade
+                )
+            )
 
         except (InvalidOperation, ValueError, OverflowError):
             conn.close()
@@ -4216,17 +4360,23 @@ def gerenciar_assinatura(personal_id):
                     proximo_vencimento = ?,
                     isento = ?,
                     motivo_isencao = ?,
-                    observacoes = ?
+                    observacoes = ?,
+                    tipo_assinatura = ?,
+                    periodo_quantidade = ?,
+                    periodo_unidade = ?
                 WHERE id = ?
                   AND personal_id = ?
             """, (
                 plano,
                 float(valor),
-                data_inicio or None,
-                proximo_vencimento or None,
+                data_inicio,
+                proximo_vencimento,
                 isento,
                 motivo_isencao,
                 observacoes,
+                tipo_assinatura,
+                quantidade,
+                periodo_unidade,
                 assinatura["id"],
                 personal_id
             ))
@@ -4242,32 +4392,40 @@ def gerenciar_assinatura(personal_id):
                     proximo_vencimento,
                     isento,
                     motivo_isencao,
-                    observacoes
+                    observacoes,
+                    tipo_assinatura,
+                    periodo_quantidade,
+                    periodo_unidade
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 personal_id,
                 plano,
                 float(valor),
-                data_inicio or None,
-                proximo_vencimento or None,
+                data_inicio,
+                proximo_vencimento,
                 isento,
                 motivo_isencao,
-                observacoes
+                observacoes,
+                tipo_assinatura,
+                quantidade,
+                periodo_unidade
             ))
 
         conn.commit()
         conn.close()
 
         return redirect(
-            f"/personais/{personal_id}/assinatura"
+            f"/personais/{personal_id}/assinatura?salvo=1"
         )
+
     conn.close()
 
     return render_template(
         "gerenciar_assinatura.html",
         personal=personal,
-        assinatura=assinatura
+        assinatura=assinatura,
+        hoje=date.today().isoformat()
     )
 
 # ============================================================
@@ -4305,6 +4463,33 @@ def inicializar_tabelas_financeiras():
                 forma_pagamento TEXT,
                 observacoes TEXT
             )
+        """)
+
+        # Migração segura: adiciona campos somente se ainda não existirem.
+        colunas = {
+            linha[1]
+            for linha in conn.execute(
+                "PRAGMA table_info(assinaturas_personais)"
+            )
+        }
+        novos_campos = {
+            "tipo_assinatura": "TEXT NOT NULL DEFAULT 'paga'",
+            "periodo_quantidade": "INTEGER",
+            "periodo_unidade": "TEXT",
+        }
+        for nome, definicao in novos_campos.items():
+            if nome not in colunas:
+                conn.execute(
+                    f"ALTER TABLE assinaturas_personais "
+                    f"ADD COLUMN {nome} {definicao}"
+                )
+
+        # Registros antigos de parceiros permanecem isentos.
+        conn.execute("""
+            UPDATE assinaturas_personais
+            SET tipo_assinatura = 'isenta'
+            WHERE isento = 1
+              AND tipo_assinatura = 'paga'
         """)
 
         conn.commit()

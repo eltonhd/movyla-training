@@ -491,19 +491,37 @@ grid-template-columns: 1fr;
 /* AJUSTE PREMIUM DO BANNER */
 
 .hero {
-    background-image:
-        linear-gradient(
-            90deg,
-            #092a1c 0%,
-            rgba(7, 28, 20, 0.98) 35%,
-            rgba(4, 22, 14, 0.55) 70%,
-            rgba(4, 25, 15, 0.15) 100%
-        ),
-        url("/static/movyla_banner_halteres.webp");
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: #092a1c;
+    border-color: #185d40;
+}
 
-    background-position: center, right center;
-    background-size: cover, auto 100%;
+/* FOTO DO HALTER COM GRADIENTE */
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+right: 0;
+bottom: 0;
+left: 35%;
+    z-index: -1;
+    pointer-events: none;
+
+    background-image: url("/static/movyla_banner_halteres.webp");
+    background-position: right center;
+    background-size: auto 125%;
     background-repeat: no-repeat;
+
+    -webkit-mask-image: linear-gradient(to right, transparent 42%, rgba(0,0,0,.25) 52%, rgba(0,0,0,.75) 65%, black 80%);
+mask-image: linear-gradient(to right, transparent 42%, rgba(0,0,0,.25) 52%, rgba(0,0,0,.75) 65%, black 80%);
+}
+
+/* TEXTOS E BOTÕES ACIMA DA IMAGEM */
+.hero > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* ETIQUETA COM FORMATO DE CÁPSULA */
@@ -741,6 +759,87 @@ Gerenciar personais <span aria-hidden="true">→</span>
     </a>
 
 </div>
+
+{% if alertas_financeiros %}
+<section style="margin: 24px 0;">
+
+    <h2 style="color: #ffffff; margin-bottom: 16px;">
+        🔔 Avisos financeiros
+    </h2>
+
+    {% for alerta in alertas_financeiros %}
+
+    <div style="
+        background: #101c17;
+        border: 1px solid {% if alerta.status == 'vencida' %}#dc3545{% else %}#eab308{% endif %};
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 12px;
+        color: #ffffff;
+    ">
+
+        <strong>{{ alerta.personal_nome }}</strong>
+
+        {% if alerta.tipo_assinatura == 'teste' %}
+
+    <p style="margin: 10px 0; color: #a3f53b;">
+        Período de teste gratuito
+    </p>
+
+{% else %}
+
+    <p style="margin: 10px 0;">
+        Mensalidade:
+        R$ {{ "%.2f"|format(alerta.valor_mensal or 0)|replace(".", ",") }}
+    </p>
+
+{% endif %}
+
+        <p style="margin: 10px 0;">
+            Vencimento:
+            {{ alerta.proximo_vencimento[8:10] }}/{{ alerta.proximo_vencimento[5:7] }}/{{ alerta.proximo_vencimento[0:4] }}
+        </p>
+
+        {% if alerta.tipo_assinatura == 'teste' %}
+
+    {% if alerta.status == 'vencida' %}
+        <strong style="color: #ff6b6b;">
+            ⚠ Teste gratuito encerrado
+        </strong>
+    {% else %}
+        <strong style="color: #facc15;">
+            ⏰ Teste gratuito termina amanhã
+        </strong>
+    {% endif %}
+
+{% elif alerta.status == 'vencida' %}
+
+    <strong style="color: #ff6b6b;">
+        ⚠ Mensalidade vencida
+    </strong>
+
+{% else %}
+
+    <strong style="color: #facc15;">
+        ⏰ Mensalidade vence amanhã
+    </strong>
+
+{% endif %}
+
+        <p style="margin-top: 12px;">
+            <a href="{{ url_for('gerenciar_assinatura', personal_id=alerta.personal_id) }}"
+               style="color: #9cff57;">
+                Gerenciar assinatura →
+            </a>
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+</section>
+{% endif %}
+
 <div class="section-heading">
 <h2>Seu painel</h2>
 <span>Gestão MOVYLA</span>
@@ -773,6 +872,57 @@ Gerenciar personais <span aria-hidden="true">→</span>
 </a>
 </div>
 {% elif session["tipo"] == "personal" %}
+{% if aviso_assinatura_personal %}
+
+<div style="
+    background: #101c17;
+    border: 1px solid #eab308;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    color: #ffffff;
+">
+
+    <h3 style="color: #c4fa59; margin-top: 0;">
+        🔔 Aviso de assinatura MOVYLA
+    </h3>
+
+    {% set dias = aviso_assinatura_personal.dias_restantes %}
+
+    {% if aviso_assinatura_personal.tipo == "teste" %}
+
+        {% if dias < 0 %}
+            <p>Seu período de teste gratuito terminou.</p>
+        {% elif dias == 0 %}
+            <p>Seu período de teste gratuito termina hoje.</p>
+        {% elif dias == 1 %}
+            <p>Seu período de teste gratuito termina amanhã.</p>
+        {% else %}
+            <p>Seu período de teste gratuito termina em {{ dias }} dias.</p>
+        {% endif %}
+
+    {% else %}
+
+        {% if dias < 0 %}
+            <p>Sua assinatura MOVYLA está vencida.</p>
+        {% elif dias == 0 %}
+            <p>Sua assinatura MOVYLA vence hoje.</p>
+        {% elif dias == 1 %}
+            <p>Sua assinatura MOVYLA vence amanhã.</p>
+        {% else %}
+            <p>Sua assinatura MOVYLA vence em {{ dias }} dias.</p>
+        {% endif %}
+
+    {% endif %}
+
+    <p style="color: #b8c5be; margin-bottom: 0;">
+        Data de vencimento:
+        <strong>{{ aviso_assinatura_personal.vencimento }}</strong>
+    </p>
+
+</div>
+
+{% endif %}
 <section class="hero">
 <div class="hero-label">Personal trainer</div>
 <h2>Seus alunos. Sua metodologia. Seus resultados.</h2>

@@ -266,6 +266,22 @@
                             ● Inativo
                         </div>
                     {% endif %}
+                    <a
+                        href="{{ url_for('gerenciar_assinatura', personal_id=personal['id']) }}"
+                        style="
+                            display: block;
+                            margin-top: 20px;
+                            padding: 13px;
+                            text-align: center;
+                            background: #a3f53b;
+                            color: #07120c;
+                            border-radius: 10px;
+                            font-weight: bold;
+                            text-decoration: none;
+                        "
+                    >
+                        Gerenciar assinatura
+                    </a>
 
                 </div>
 
