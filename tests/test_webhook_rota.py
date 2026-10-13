@@ -29,9 +29,11 @@ class TestarWebhookRota(unittest.TestCase):
         self.assertIn('validar_assinatura_webhook(', self.fonte_rota)
         self.assertIn('return "", 401', self.fonte_rota)
 
-    def test_nao_renova_assinatura_automaticamente(self):
-        self.assertNotIn('liquidar_pagamento_verificado(', self.fonte_rota)
-        self.assertNotIn('confirmar_e_renovar(', self.fonte_rota)
+    def test_renovacao_exige_segunda_flag(self):
+        self.assertIn('MOVYLA_RENOVACAO_PIX_TESTE_HABILITADA', self.fonte_rota)
+        self.assertIn('reconciliar_order_autenticada(', self.fonte_rota)
+        self.assertIn('conn.commit()', self.fonte_rota)
+        self.assertIn('conn.rollback()', self.fonte_rota)
 
 
 if __name__ == "__main__":
