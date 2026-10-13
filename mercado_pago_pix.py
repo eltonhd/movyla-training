@@ -48,9 +48,9 @@ def criar_pix(cobranca_id, referencia, valor_centavos, email_pagador):
     Chamar somente a partir de cobrança pertencente ao personal autenticado.
     Nunca usar valor recebido do formulário.
     """
-    if not isinstance(cobranca_id, int) or cobranca_id <= 0:
+    if type(cobranca_id) is not int or cobranca_id <= 0:
         raise ValueError("Cobrança inválida.")
-    if not isinstance(valor_centavos, int) or valor_centavos <= 0:
+    if type(valor_centavos) is not int or valor_centavos <= 0:
         raise ValueError("Valor inválido.")
     if not isinstance(referencia, str) or not referencia.strip():
         raise ValueError("Referência inválida.")
