@@ -4776,10 +4776,13 @@ def inicializar_tabelas_financeiras():
         conn.close()
 
 
+
 from banco_homologacao import inicializar_banco_homologacao
+from admin_inicial_homologacao import criar_admin_inicial
 
 inicializar_banco_homologacao()
 inicializar_tabelas_financeiras()
+criar_admin_inicial()
 
 # ============================================================
 # ÁREA FINANCEIRA DO PERSONAL (CONSULTA, SEM PAGAMENTO)
