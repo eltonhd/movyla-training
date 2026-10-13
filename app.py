@@ -7,9 +7,10 @@ from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
 from planos import criar_tabela_planos, listar_planos
-from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas
+from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas, registrar_cobranca
 from renovacoes import preparar_renovacoes
 import os
+import secrets
 
 
 # ============================================================
@@ -4794,6 +4795,44 @@ def obter_resumo_financeiro_personal(conn, personal_id):
     return assinatura, cobrancas
 
 
+@app.route("/minha-assinatura/solicitar", methods=["POST"])
+@login_obrigatorio
+def solicitar_cobranca_personal():
+    if not usuario_e_personal():
+        return redirect("/")
+    token = session.get("csrf_financeiro")
+    if not token or token != request.form.get("csrf_token"):
+        return "Solicitacao invalida", 400
+    try:
+        plano_id = int(request.form.get("plano_id", ""))
+    except (TypeError, ValueError):
+        return "Plano invalido", 400
+    conn = conectar()
+    try:
+        assinatura = conn.execute("""
+            SELECT id FROM assinaturas_personais
+            WHERE personal_id = ? AND tipo_assinatura = 'paga' AND isento = 0
+        """, (session["usuario_id"],)).fetchone()
+        if assinatura is None:
+            return "Assinatura indisponivel", 400
+        pendente = conn.execute("""
+            SELECT id FROM cobrancas_assinatura
+            WHERE assinatura_id = ? AND status = 'pendente'
+        """, (assinatura["id"],)).fetchone()
+        if pendente:
+            return redirect("/minha-assinatura")
+        registrar_cobranca(
+            conn, assinatura["id"], plano_id, "movyla-" + secrets.token_hex(16)
+        )
+        conn.commit()
+        return redirect("/minha-assinatura")
+    except ValueError as exc:
+        conn.rollback()
+        return str(exc), 400
+    finally:
+        conn.close()
+
+
 @app.route("/minha-assinatura")
 @login_obrigatorio
 def minha_assinatura():
@@ -4805,9 +4844,11 @@ def minha_assinatura():
             conn, session["usuario_id"]
         )
         planos_disponiveis = listar_planos(conn)
+        session.setdefault("csrf_financeiro", secrets.token_urlsafe(32))
         return render_template(
             "minha_assinatura.html", assinatura=assinatura,
-            planos=planos_disponiveis, cobrancas=cobrancas
+            planos=planos_disponiveis, cobrancas=cobrancas,
+            csrf_financeiro=session["csrf_financeiro"]
         )
     finally:
         conn.close()
