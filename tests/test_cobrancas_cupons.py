@@ -5,7 +5,8 @@ from planos import criar_tabela_planos
 from cobrancas import (
     criar_tabela_cobrancas, criar_tabela_cupons,
     registrar_cobranca_com_cupom, preparar_descontos_cobrancas,
-    cancelar_cobranca_pendente, expirar_cobranca_pendente
+    cancelar_cobranca_pendente, expirar_cobranca_pendente,
+    registrar_confirmacao_verificada
 )
 
 
@@ -94,6 +95,41 @@ class TestarCobrancaComCupom(unittest.TestCase):
         cancelar_cobranca_pendente(self.conn, cobranca_id)
         with self.assertRaises(ValueError):
             cancelar_cobranca_pendente(self.conn, cobranca_id)
+
+    def test_confirmacao_unica_consume_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-pago", "PROMO10", 7, 5
+        )
+        self.assertTrue(
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-123")
+        )
+        self.assertFalse(
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-123")
+        )
+        status = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()[0]
+        usado_em = self.conn.execute(
+            "SELECT usado_em FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()[0]
+        self.assertEqual(status, "paga")
+        self.assertIsNotNone(usado_em)
+
+    def test_identificador_diferente_nao_reconfirma(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-id", "PROMO10", 7, 5
+        )
+        registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-1")
+        with self.assertRaises(ValueError):
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-2")
+
+    def test_cobranca_cancelada_nao_pode_ser_confirmada(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-cancelar", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        with self.assertRaises(ValueError):
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-3")
 
     def test_migracao_preserva_cobranca_antiga(self):
         from cobrancas import registrar_cobranca
