@@ -225,6 +225,7 @@ def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos, admi
         SELECT desconto_centavos, personal_id, plano_id, administrador_id
         FROM cupons_assinatura
         WHERE codigo = ? AND ativo = 1 AND usado_em IS NULL
+          AND cobranca_id IS NULL
     """, (codigo.strip().upper(),)).fetchone()
     if cupom is None:
         raise ValueError("Cupom indisponível.")
