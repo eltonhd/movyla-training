@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
+from planos import criar_tabela_planos
 import os
 
 
@@ -4547,6 +4548,7 @@ def inicializar_tabelas_financeiras():
               AND tipo_assinatura = 'paga'
         """)
 
+        criar_tabela_planos(conn)
         conn.commit()
 
     finally:
