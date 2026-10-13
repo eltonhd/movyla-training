@@ -47,6 +47,14 @@ class TestarCobrancaComCupom(unittest.TestCase):
         """).fetchone()
         self.assertEqual(cupom, (cobranca_id, None))
 
+    def test_cupom_reservado_nao_aparece_disponivel(self):
+        from cobrancas import consultar_desconto
+        registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-reservado", "PROMO10", 7, 5
+        )
+        with self.assertRaises(ValueError):
+            consultar_desconto(self.conn, "PROMO10", 7, 1, 5000, 5)
+
     def test_nao_permite_reservar_duas_vezes(self):
         registrar_cobranca_com_cupom(self.conn, 1, 1, "pedido-1", "PROMO10", 7, 5)
         with self.assertRaises(ValueError):
