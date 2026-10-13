@@ -51,3 +51,39 @@ def registrar_cobranca(conn, assinatura_id, plano_id, referencia):
     except sqlite3.IntegrityError as exc:
         raise ValueError("Referência já utilizada.") from exc
     return cursor.lastrowid
+
+
+def criar_tabela_cupons(conn):
+    """Prepara cupons de valor fixo com uso único, sem aplicá-los a cobranças."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cupons_assinatura (
+            id INTEGER PRIMARY KEY,
+            codigo TEXT NOT NULL UNIQUE,
+            desconto_centavos INTEGER NOT NULL CHECK(desconto_centavos > 0),
+            personal_id INTEGER,
+            plano_id INTEGER,
+            ativo INTEGER NOT NULL DEFAULT 1 CHECK(ativo IN (0, 1)),
+            usado_em TEXT,
+            cobranca_id INTEGER UNIQUE
+        )
+    """)
+
+
+def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos):
+    """Calcula o desconto elegível sem consumir o cupom."""
+    if not isinstance(codigo, str) or not codigo.strip():
+        raise ValueError("Cupom inválido.")
+    cupom = conn.execute("""
+        SELECT desconto_centavos, personal_id, plano_id
+        FROM cupons_assinatura
+        WHERE codigo = ? AND ativo = 1 AND usado_em IS NULL
+    """, (codigo.strip().upper(),)).fetchone()
+    if cupom is None:
+        raise ValueError("Cupom indisponível.")
+    if cupom[1] is not None and cupom[1] != personal_id:
+        raise ValueError("Cupom restrito a outro personal.")
+    if cupom[2] is not None and cupom[2] != plano_id:
+        raise ValueError("Cupom restrito a outro plano.")
+    if not isinstance(preco_centavos, int) or preco_centavos <= 0:
+        raise ValueError("Preço inválido.")
+    return min(cupom[0], preco_centavos)
