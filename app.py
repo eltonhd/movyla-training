@@ -12,7 +12,7 @@ from renovacoes import preparar_renovacoes
 from orders_mercado_pago import preparar_vinculos_orders
 from servico_pix import gerar_pix_cobranca
 from webhook_mercado_pago import validar_assinatura_webhook
-from conciliacao_orders import conferir_order_autenticada
+from conciliacao_orders import conferir_order_autenticada, reconciliar_order_autenticada
 import os
 import secrets
 
@@ -4881,12 +4881,26 @@ def webhook_orders_mercado_pago():
         if registro is None:
             return "", 202
         # Consulta servidor-servidor. Nunca confia no status do webhook.
+        # Dupla habilitação, somente após testes reais de integração.
+        if os.environ.get("MOVYLA_RENOVACAO_PIX_TESTE_HABILITADA") == "1":
+            try:
+                vencimento, aplicada = reconciliar_order_autenticada(
+                    conn, registro["cobranca_id"]
+                )
+                conn.commit()
+                app.logger.info(
+                    "Conciliacao Pix cobranca %s, renovacao aplicada=%s",
+                    registro["cobranca_id"], aplicada
+                )
+                return "", 200
+            except Exception:
+                conn.rollback()
+                raise
         comprovado = conferir_order_autenticada(conn, registro["cobranca_id"])
         app.logger.info(
             "Order Pix autenticada e conferida para cobranca %s (sem liquidacao)",
             comprovado.cobranca_id
         )
-        # A liquidação fica desativada até validação real da API e testes E2E.
         return "", 200
     except ValueError:
         # Pode ser notificação de Order ainda pendente; não liquidar.
