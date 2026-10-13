@@ -304,16 +304,21 @@ def inicio():
 
             if not isento and tipo in ("paga", "teste") and vencimento:
 
-                data_vencimento = date.fromisoformat(vencimento)
-                dias_restantes = (data_vencimento - date.today()).days
+                # Datas antigas ou incompletas não devem derrubar o dashboard.
+                try:
+                    data_vencimento = date.fromisoformat(vencimento)
+                except (TypeError, ValueError):
+                    data_vencimento = None
 
-                if dias_restantes <= 3:
+                if data_vencimento is not None:
+                    dias_restantes = (data_vencimento - date.today()).days
 
-                    aviso_assinatura_personal = {
-                        "tipo": tipo,
-                        "dias_restantes": dias_restantes,
-                        "vencimento": data_vencimento.strftime("%d/%m/%Y")
-                    }
+                    if dias_restantes <= 3:
+                        aviso_assinatura_personal = {
+                            "tipo": tipo,
+                            "dias_restantes": dias_restantes,
+                            "vencimento": data_vencimento.strftime("%d/%m/%Y")
+                        }
 
 
         cursor.execute("""
