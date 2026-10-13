@@ -7,6 +7,7 @@ from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
 from planos import criar_tabela_planos
+from cobrancas import criar_tabela_cobrancas
 import os
 
 
@@ -4654,6 +4655,7 @@ def inicializar_tabelas_financeiras():
         """)
 
         criar_tabela_planos(conn)
+        criar_tabela_cobrancas(conn)
         conn.commit()
 
     finally:
