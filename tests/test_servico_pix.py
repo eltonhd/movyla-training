@@ -54,10 +54,17 @@ class TestarServicoPix(unittest.TestCase):
         }):
             gerar_pix_cobranca(self.conn, 1, 11, "p@example.com")
         with patch("servico_pix.criar_pix") as criar, patch(
-            "servico_pix.consultar_pagamento", return_value={"id": "ORD-1"}
+            "servico_pix.consultar_pagamento", return_value={
+                "id": "ORD-1", "status": "action_required",
+                "transactions": {"payments": [{"payment_method": {
+                    "transaction_data": {"qr_code": "pix-reaberto", "qr_code_base64": "base64"}
+                }}]}
+            }
         ) as consultar:
             retorno = gerar_pix_cobranca(self.conn, 1, 11, "p@example.com")
         self.assertEqual(retorno["id"], "ORD-1")
+        self.assertEqual(retorno["qr_code"], "pix-reaberto")
+        self.assertEqual(retorno["qr_code_base64"], "base64")
         criar.assert_not_called()
         consultar.assert_called_once_with("ORD-1")
 
