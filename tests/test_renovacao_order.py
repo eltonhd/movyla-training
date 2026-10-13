@@ -17,7 +17,8 @@ class TestarRenovacaoOrder(unittest.TestCase):
         self.conn.execute("""
             CREATE TABLE assinaturas_personais (
                 id INTEGER PRIMARY KEY, personal_id INTEGER,
-                proximo_vencimento TEXT, plano TEXT
+                proximo_vencimento TEXT, plano TEXT,
+                tipo_assinatura TEXT DEFAULT 'paga', isento INTEGER DEFAULT 0
             )
         """)
         self.conn.execute("""
