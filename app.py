@@ -4776,6 +4776,9 @@ def inicializar_tabelas_financeiras():
         conn.close()
 
 
+from banco_homologacao import inicializar_banco_homologacao
+
+inicializar_banco_homologacao()
 inicializar_tabelas_financeiras()
 
 # ============================================================
