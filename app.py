@@ -4397,6 +4397,16 @@ def gerenciar_assinatura(personal_id):
 
     assinatura = cursor.fetchone()
 
+    from planos import criar_tabela_planos
+    criar_tabela_planos(conn)
+    conn.commit()
+    planos_disponiveis = conn.execute("""
+        SELECT id, nome, periodo_meses, preco_centavos
+        FROM planos_assinatura
+        WHERE ativo = 1
+        ORDER BY periodo_meses
+    """).fetchall()
+
     # ========================================================
     # SALVAR ASSINATURA
     # ========================================================
@@ -4405,6 +4415,22 @@ def gerenciar_assinatura(personal_id):
 
         plano = request.form.get("plano", "").strip()
         valor_texto = request.form.get("valor_mensal", "").strip()
+        plano_catalogo_id = request.form.get("plano_catalogo_id", "").strip()
+        if plano_catalogo_id:
+            try:
+                plano_catalogo_id = int(plano_catalogo_id)
+            except ValueError:
+                conn.close()
+                return "Plano selecionado inválido.", 400
+            plano_catalogo = conn.execute("""
+                SELECT nome, periodo_meses, preco_centavos
+                FROM planos_assinatura WHERE id = ? AND ativo = 1
+            """, (plano_catalogo_id,)).fetchone()
+            if plano_catalogo is None:
+                conn.close()
+                return "Plano indisponível.", 400
+            plano = plano_catalogo["nome"]
+            valor_texto = str(Decimal(plano_catalogo["preco_centavos"]) / 100)
         tipo_assinatura = request.form.get(
             "tipo_assinatura", "paga"
         ).strip()
@@ -4416,6 +4442,9 @@ def gerenciar_assinatura(personal_id):
         periodo_unidade = request.form.get(
             "periodo_unidade", ""
         ).strip()
+        if plano_catalogo_id:
+            periodo_quantidade = str(plano_catalogo["periodo_meses"])
+            periodo_unidade = "meses"
         data_inicio = request.form.get("data_inicio", "").strip()
         proximo_vencimento = request.form.get(
             "proximo_vencimento", ""
@@ -4556,6 +4585,7 @@ def gerenciar_assinatura(personal_id):
         "gerenciar_assinatura.html",
         personal=personal,
         assinatura=assinatura,
+        planos_disponiveis=planos_disponiveis,
         hoje=date.today().isoformat()
     )
 
