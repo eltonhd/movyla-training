@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
-from planos import criar_tabela_planos
+from planos import criar_tabela_planos, listar_planos
 from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas
 from renovacoes import preparar_renovacoes
 import os
@@ -4771,6 +4771,39 @@ def inicializar_tabelas_financeiras():
 
 
 inicializar_tabelas_financeiras()
+
+# ============================================================
+# ÁREA FINANCEIRA DO PERSONAL (CONSULTA, SEM PAGAMENTO)
+# ============================================================
+
+@app.route("/minha-assinatura")
+@login_obrigatorio
+def minha_assinatura():
+    if not usuario_e_personal():
+        return redirect("/")
+    conn = conectar()
+    try:
+        assinatura = conn.execute("""
+            SELECT id, plano, tipo_assinatura, isento, proximo_vencimento
+            FROM assinaturas_personais WHERE personal_id = ?
+        """, (session["usuario_id"],)).fetchone()
+        planos_disponiveis = listar_planos(conn)
+        cobrancas = []
+        if assinatura:
+            cobrancas = conn.execute("""
+                SELECT referencia, valor_centavos, status, criada_em, paga_em,
+                       periodo_meses, COALESCE(desconto_centavos, 0) AS desconto_centavos
+                FROM cobrancas_assinatura
+                WHERE assinatura_id = ?
+                ORDER BY id DESC LIMIT 20
+            """, (assinatura["id"],)).fetchall()
+        return render_template(
+            "minha_assinatura.html", assinatura=assinatura,
+            planos=planos_disponiveis, cobrancas=cobrancas
+        )
+    finally:
+        conn.close()
+
 
 # ============================================================
 # EXECUTAR
