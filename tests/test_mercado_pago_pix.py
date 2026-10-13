@@ -46,6 +46,20 @@ class TestarMercadoPagoPix(unittest.TestCase):
         with self.assertRaises(ValueError):
             mp.consultar_pagamento("../outro")
 
+    def test_normaliza_pix_consultado_com_hifen(self):
+        resposta = {
+            "id": "ORD-123", "status": "action_required",
+            "transactions": {"payments": [{"payment_method": {
+                "transaction_data": {"qr_code": "000201", "qr_code_base64": "abc"}
+            }}]}
+        }
+        with patch("mercado_pago_pix._requisitar", return_value=resposta):
+            bruto = mp.consultar_pagamento("ORD-123")
+        self.assertEqual(bruto, resposta)
+        pix = mp.extrair_dados_pix_order(bruto)
+        self.assertEqual(pix["qr_code"], "000201")
+        self.assertEqual(pix["qr_code_base64"], "abc")
+
     def test_consulta_pagamento_autenticada(self):
         with patch("mercado_pago_pix._requisitar", return_value={"status": "approved"}) as requisitar:
             self.assertEqual(mp.consultar_pagamento("ORD123")["status"], "approved")
