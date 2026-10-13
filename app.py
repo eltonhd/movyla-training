@@ -4854,14 +4854,16 @@ def webhook_orders_mercado_pago():
         return "", 503
     if request.content_length is not None and request.content_length > 16384:
         return "", 413
+    if len(request.get_data(cache=True)) > 16384:
+        return "", 413
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return "", 400
     data = payload.get("data")
     if not isinstance(data, dict):
         return "", 400
-    order_id = str(data.get("id", ""))
-    if not order_id or len(order_id) > 128:
+    order_id = data.get("id")
+    if not isinstance(order_id, str) or not order_id or len(order_id) > 128:
         return "", 400
     if not validar_assinatura_webhook(
         segredo,
