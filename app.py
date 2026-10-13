@@ -4866,7 +4866,25 @@ def gerar_pix_personal(cobranca_id):
         )
         conn.commit()
         # Nunca interpretar a criacao de QR Code como pagamento confirmado.
-        return redirect("/minha-assinatura")
+        metodo = resultado.get("payment_method") or {}
+        qr_code = resultado.get("qr_code") or metodo.get("qr_code")
+        qr_code_base64 = resultado.get("qr_code_base64") or metodo.get("qr_code_base64")
+        ticket_url = resultado.get("ticket_url") or metodo.get("ticket_url")
+        if qr_code_base64 and (not isinstance(qr_code_base64, str) or
+                               len(qr_code_base64) > 250000 or
+                               not all(c.isalnum() or c in "+/=" for c in qr_code_base64)):
+            qr_code_base64 = None
+        if not isinstance(qr_code, str) or len(qr_code) > 5000:
+            qr_code = None
+        if not isinstance(ticket_url, str) or not ticket_url.startswith(
+            "https://"
+        ) or len(ticket_url) > 2048:
+            ticket_url = None
+        return render_template(
+            "pix_teste.html", qr_code=qr_code,
+            qr_code_base64=qr_code_base64, ticket_url=ticket_url,
+            status=resultado.get("status"), cobranca_id=cobranca_id
+        )
     except ValueError as exc:
         conn.rollback()
         return str(exc), 400
