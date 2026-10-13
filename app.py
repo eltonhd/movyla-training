@@ -202,6 +202,14 @@ def inicio():
     total_personais = 0
     alertas_financeiros = []
     aviso_assinatura_personal = None
+    indicadores_assinaturas = {
+        "pagas": 0,
+        "testes": 0,
+        "isentas": 0,
+        "sem_assinatura": 0,
+        "vencidas": 0,
+        "receita_prevista": 0.0,
+    }
 
     # ========================================================
     # OWNER
@@ -240,6 +248,47 @@ def inicio():
         """)
 
         total_exercicios = cursor.fetchone()[0]
+
+        # Indicadores calculados no servidor e limitados aos profissionais
+        # deste administrador, sem incluir parceiros isentos na receita.
+        cursor.execute("""
+            SELECT
+                u.id,
+                a.tipo_assinatura,
+                a.isento,
+                a.valor_mensal,
+                a.proximo_vencimento
+            FROM usuarios u
+            LEFT JOIN assinaturas_personais a ON a.personal_id = u.id
+            WHERE u.tipo = 'personal'
+              AND u.ativo = 1
+              AND u.responsavel_id = ?
+        """, (session["usuario_id"],))
+
+        hoje = date.today()
+        for linha in cursor.fetchall():
+            if linha["tipo_assinatura"] is None:
+                indicadores_assinaturas["sem_assinatura"] += 1
+                continue
+            if linha["isento"] or linha["tipo_assinatura"] == "isenta":
+                indicadores_assinaturas["isentas"] += 1
+                continue
+            vencimento = None
+            try:
+                if linha["proximo_vencimento"]:
+                    vencimento = date.fromisoformat(linha["proximo_vencimento"])
+            except (TypeError, ValueError):
+                pass
+            if vencimento is not None and vencimento < hoje:
+                indicadores_assinaturas["vencidas"] += 1
+            if linha["tipo_assinatura"] == "teste":
+                indicadores_assinaturas["testes"] += 1
+            elif linha["tipo_assinatura"] == "paga":
+                indicadores_assinaturas["pagas"] += 1
+                if vencimento is not None and vencimento >= hoje:
+                    indicadores_assinaturas["receita_prevista"] += max(
+                        0, linha["valor_mensal"] or 0
+                    )
 
         # ====================================================
         # ALERTAS FINANCEIROS DO ADMINISTRADOR
@@ -375,6 +424,7 @@ def inicio():
         total_exercicios=total_exercicios,
         total_personais=total_personais,
         alertas_financeiros=alertas_financeiros,
+        indicadores_assinaturas=indicadores_assinaturas,
         aviso_assinatura_personal=aviso_assinatura_personal
     )
 
