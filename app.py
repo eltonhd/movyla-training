@@ -4323,6 +4323,109 @@ def administrar_planos():
 
 
 # ============================================================
+# ADMINISTRAR CUPONS DE DESCONTO
+# ============================================================
+
+@app.route("/admin/cupons", methods=["GET", "POST"])
+@login_obrigatorio
+def administrar_cupons():
+    if not usuario_e_owner():
+        return redirect("/")
+
+    import secrets
+    from cobrancas import criar_tabela_cupons
+
+    token = session.get("cupons_csrf")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["cupons_csrf"] = token
+
+    erro = None
+    conn = conectar()
+    try:
+        criar_tabela_cupons(conn)
+        conn.commit()
+        if request.method == "POST":
+            if not secrets.compare_digest(request.form.get("csrf_token", ""), token):
+                return "Requisição inválida.", 400
+            try:
+                acao = request.form.get("acao", "criar")
+                if acao == "desativar":
+                    cupom_id = int(request.form.get("cupom_id", ""))
+                    cursor = conn.execute("""
+                        UPDATE cupons_assinatura SET ativo = 0
+                        WHERE id = ? AND usado_em IS NULL
+                    """, (cupom_id,))
+                    if cursor.rowcount != 1:
+                        raise ValueError("Cupom indisponível.")
+                elif acao == "criar":
+                    codigo = request.form.get("codigo", "").strip().upper()
+                    valor = Decimal(request.form.get("desconto", "").strip().replace(",", "."))
+                    if not (3 <= len(codigo) <= 32) or not all(
+                        c.isascii() and (c.isupper() or c.isdigit() or c in "-_")
+                        for c in codigo
+                    ):
+                        raise ValueError("Código: 3 a 32 letras maiúsculas, números, - ou _. ")
+                    if not valor.is_finite() or valor <= 0 or valor > 100000:
+                        raise ValueError("Desconto inválido.")
+                    if valor != valor.quantize(Decimal("0.01")):
+                        raise ValueError("Máximo de duas casas decimais.")
+
+                    personal_texto = request.form.get("personal_id", "").strip()
+                    plano_texto = request.form.get("plano_id", "").strip()
+                    personal_id = int(personal_texto) if personal_texto else None
+                    plano_id = int(plano_texto) if plano_texto else None
+                    if personal_id is not None:
+                        existe = conn.execute("""
+                            SELECT 1 FROM usuarios
+                            WHERE id = ? AND tipo = 'personal' AND responsavel_id = ?
+                        """, (personal_id, session["usuario_id"])).fetchone()
+                        if not existe:
+                            raise ValueError("Personal inválido.")
+                    if plano_id is not None:
+                        existe = conn.execute("""
+                            SELECT 1 FROM planos_assinatura WHERE id = ? AND ativo = 1
+                        """, (plano_id,)).fetchone()
+                        if not existe:
+                            raise ValueError("Plano inválido.")
+                    conn.execute("""
+                        INSERT INTO cupons_assinatura
+                            (codigo, desconto_centavos, personal_id, plano_id)
+                        VALUES (?, ?, ?, ?)
+                    """, (codigo, int(valor * 100), personal_id, plano_id))
+                else:
+                    raise ValueError("Ação inválida.")
+                conn.commit()
+                return redirect("/admin/cupons?salvo=1")
+            except (ValueError, InvalidOperation, OverflowError, sqlite3.IntegrityError) as exc:
+                conn.rollback()
+                erro = "Verifique os dados; código duplicado ou valor inválido." if isinstance(
+                    exc, sqlite3.IntegrityError
+                ) else str(exc)
+
+        cupons = conn.execute("""
+            SELECT c.*, u.nome AS personal_nome, p.nome AS plano_nome
+            FROM cupons_assinatura c
+            LEFT JOIN usuarios u ON u.id = c.personal_id
+            LEFT JOIN planos_assinatura p ON p.id = c.plano_id
+            ORDER BY c.id DESC
+        """).fetchall()
+        personais = conn.execute("""
+            SELECT id, nome FROM usuarios
+            WHERE tipo = 'personal' AND responsavel_id = ?
+            ORDER BY nome
+        """, (session["usuario_id"],)).fetchall()
+        planos = conn.execute("""
+            SELECT id, nome FROM planos_assinatura WHERE ativo = 1 ORDER BY periodo_meses
+        """).fetchall()
+        return render_template("admin_cupons.html", cupons=cupons,
+            personais=personais, planos=planos, erro=erro,
+            csrf_token=token, sucesso=request.args.get("salvo") == "1")
+    finally:
+        conn.close()
+
+
+# ============================================================
 # CALCULAR VENCIMENTO DA ASSINATURA
 # ============================================================
 
