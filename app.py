@@ -11,6 +11,8 @@ from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_desc
 from renovacoes import preparar_renovacoes
 from orders_mercado_pago import preparar_vinculos_orders
 from servico_pix import gerar_pix_cobranca
+from webhook_mercado_pago import validar_assinatura_webhook
+from conciliacao_orders import conferir_order_autenticada
 import os
 import secrets
 
@@ -4838,6 +4840,58 @@ def solicitar_cobranca_personal():
     except ValueError as exc:
         conn.rollback()
         return str(exc), 400
+    finally:
+        conn.close()
+
+
+@app.route("/webhooks/mercado-pago/orders", methods=["POST"])
+def webhook_orders_mercado_pago():
+    # Por padrão não recebe notificações em produção.
+    if os.environ.get("MOVYLA_WEBHOOK_TESTE_HABILITADO") != "1":
+        return "", 404
+    segredo = os.environ.get("MERCADO_PAGO_WEBHOOK_SECRET", "")
+    if not segredo:
+        return "", 503
+    if request.content_length is not None and request.content_length > 16384:
+        return "", 413
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return "", 400
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return "", 400
+    order_id = str(data.get("id", ""))
+    if not order_id or len(order_id) > 128:
+        return "", 400
+    if not validar_assinatura_webhook(
+        segredo,
+        request.headers.get("x-signature", ""),
+        request.headers.get("x-request-id", ""),
+        order_id,
+    ):
+        return "", 401
+    conn = conectar()
+    try:
+        # Apenas uma Order previamente vinculada pode ser consultada.
+        registro = conn.execute("""
+            SELECT cobranca_id FROM orders_mercado_pago WHERE order_id = ?
+        """, (order_id,)).fetchone()
+        if registro is None:
+            return "", 202
+        # Consulta servidor-servidor. Nunca confia no status do webhook.
+        comprovado = conferir_order_autenticada(conn, registro["cobranca_id"])
+        app.logger.info(
+            "Order Pix autenticada e conferida para cobranca %s (sem liquidacao)",
+            comprovado.cobranca_id
+        )
+        # A liquidação fica desativada até validação real da API e testes E2E.
+        return "", 200
+    except ValueError:
+        # Pode ser notificação de Order ainda pendente; não liquidar.
+        return "", 202
+    except Exception:
+        app.logger.exception("Falha ao consultar Order autenticada")
+        return "", 503
     finally:
         conn.close()
 
