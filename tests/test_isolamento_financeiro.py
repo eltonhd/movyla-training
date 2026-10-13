@@ -57,7 +57,7 @@ class TestarIsolamentoFinanceiro(unittest.TestCase):
 
     def test_personal_11_so_ve_proprios_dados(self):
         assinatura, cobrancas = self.consultar(self.conn, 11)
-        self.assertEqual(assinatura["personal_id"] if "personal_id" in assinatura.keys() else assinatura["id"], 1)
+        self.assertEqual(assinatura["id"], 1)
         self.assertEqual([x["referencia"] for x in cobrancas], ["somente-11"])
 
     def test_personal_22_so_ve_proprios_dados(self):
