@@ -46,6 +46,14 @@ class TestarLiquidacaoPix(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Moeda"):
             liquidar_pagamento_verificado(self.conn, self.pagamento(moeda="USD"))
 
+    def test_recusa_moeda_ausente(self):
+        with self.assertRaisesRegex(ValueError, "Moeda inválida"):
+            liquidar_pagamento_verificado(self.conn, self.pagamento(moeda=None))
+
+    def test_recusa_status_ausente(self):
+        with self.assertRaisesRegex(ValueError, "Status inválido"):
+            liquidar_pagamento_verificado(self.conn, self.pagamento(status=None))
+
     def test_recusa_pagamento_nao_aprovado(self):
         with self.assertRaisesRegex(ValueError, "não aprovado"):
             liquidar_pagamento_verificado(self.conn, self.pagamento(status="pendente"))
