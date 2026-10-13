@@ -7,6 +7,7 @@ from unittest.mock import patch
 from conciliacao_orders import reconciliar_order_autenticada
 from orders_mercado_pago import preparar_vinculos_orders, vincular_order
 from renovacoes import preparar_renovacoes
+from cobrancas import criar_tabela_cupons
 
 
 class TestarRenovacaoOrder(unittest.TestCase):
@@ -36,6 +37,7 @@ class TestarRenovacaoOrder(unittest.TestCase):
             (id, assinatura_id, referencia, valor_centavos, periodo_meses, status)
             VALUES (7, 1, 'movyla-7', 5000, 1, 'pendente')
         """)
+        criar_tabela_cupons(self.conn)
         preparar_vinculos_orders(self.conn)
         preparar_renovacoes(self.conn)
         vincular_order(self.conn, 7, "ORD-7", "action_required")
