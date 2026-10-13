@@ -1,6 +1,6 @@
 """Adaptador inicial Mercado Pago Pix. Sem endpoint público ou credenciais no código.
 
-Referência oficial: POST /v1/payments com payment_method_id=pix.
+Referência oficial: POST /v1/orders com transactions.payments Pix.
 A resposta inicial gera instruções Pix, NÃO comprova pagamento.
 """
 import json
@@ -56,32 +56,39 @@ def criar_pix(cobranca_id, referencia, valor_centavos, email_pagador):
         raise ValueError("Referência inválida.")
     if not isinstance(email_pagador, str) or "@" not in email_pagador:
         raise ValueError("E-mail do pagador inválido.")
+    if len(referencia) > 64:
+        raise ValueError("Referência excede 64 caracteres.")
+    valor = format(Decimal(valor_centavos) / 100, ".2f")
     dados = {
-        "transaction_amount": float(Decimal(valor_centavos) / 100),
-        "description": "Assinatura MOVYLA Training",
-        "payment_method_id": "pix",
+        "type": "online",
+        "processing_mode": "automatic",
+        "total_amount": valor,
         "external_reference": referencia,
         "payer": {"email": email_pagador},
+        "transactions": {"payments": [{
+            "amount": valor,
+            "payment_method": {"id": "pix", "type": "bank_transfer"}
+        }]}
     }
     retorno = _requisitar(
-        "/v1/payments", metodo="POST", dados=dados,
+        "/v1/orders", metodo="POST", dados=dados,
         chave_idempotencia="movyla-pix-" + str(cobranca_id)
     )
+    pagamentos = retorno.get("transactions", {}).get("payments", [])
+    pagamento = pagamentos[0] if pagamentos else {}
+    metodo = pagamento.get("payment_method") or {}
     return {
         "id": str(retorno["id"]),
         "status": retorno.get("status"),
-        "qr_code": retorno.get("point_of_interaction", {}).get(
-            "transaction_data", {}
-        ).get("qr_code"),
-        "qr_code_base64": retorno.get("point_of_interaction", {}).get(
-            "transaction_data", {}
-        ).get("qr_code_base64"),
+        "qr_code": metodo.get("qr_code"),
+        "qr_code_base64": metodo.get("qr_code_base64"),
+        "ticket_url": metodo.get("ticket_url"),
     }
 
 
-def consultar_pagamento(payment_id):
-    """Consulta diretamente a API autenticada; webhook isolado não aprova nada."""
-    identificador = str(payment_id)
-    if not identificador.isdigit() or len(identificador) > 32:
-        raise ValueError("ID de pagamento inválido.")
-    return _requisitar("/v1/payments/" + identificador)
+def consultar_pagamento(order_id):
+    """Consulta a order na API autenticada; webhook isolado não aprova nada."""
+    identificador = str(order_id)
+    if not identificador.startswith("ORD") or not identificador.isalnum() or len(identificador) > 64:
+        raise ValueError("ID de order inválido.")
+    return _requisitar("/v1/orders/" + identificador)
