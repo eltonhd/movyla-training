@@ -760,6 +760,32 @@ Gerenciar personais <span aria-hidden="true">→</span>
 
 </div>
 
+{% if session.get('tipo') == 'master' %}
+<section class="movyla-assinaturas-resumo" style="margin:28px 0;">
+    <h2 style="color:#f5f8f5;margin-bottom:16px;">Visão geral das assinaturas</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;">
+        {% for titulo, numero in [
+            ('Pagas', indicadores_assinaturas.pagas),
+            ('Teste gratuito', indicadores_assinaturas.testes),
+            ('Parceiros isentos', indicadores_assinaturas.isentas),
+            ('Sem assinatura', indicadores_assinaturas.sem_assinatura),
+            ('Vencidas', indicadores_assinaturas.vencidas)
+        ] %}
+        <div style="background:#101c17;border:1px solid #244536;border-radius:14px;padding:17px;">
+            <div style="font-size:27px;font-weight:800;color:#b7f657;">{{ numero }}</div>
+            <div style="color:#c5d4c9;font-size:13px;margin-top:5px;">{{ titulo }}</div>
+        </div>
+        {% endfor %}
+        <div style="background:#101c17;border:1px solid #244536;border-radius:14px;padding:17px;">
+            <div style="font-size:23px;font-weight:800;color:#b7f657;">
+                R$ {{ '%.2f'|format(indicadores_assinaturas.receita_prevista)|replace('.', ',') }}
+            </div>
+            <div style="color:#c5d4c9;font-size:13px;margin-top:5px;">Receita prevista (não recebida)</div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 {% if alertas_financeiros %}
 <section style="margin: 24px 0;">
 
