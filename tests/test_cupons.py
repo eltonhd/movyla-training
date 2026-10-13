@@ -17,6 +17,14 @@ class TestarCupons(unittest.TestCase):
     def tearDown(self):
         self.conn.close()
 
+    def test_migracao_adiciona_administrador_sem_apagar_cupons(self):
+        self.conn.execute("UPDATE cupons_assinatura SET administrador_id = 9 WHERE codigo = 'ALE20'")
+        criar_tabela_cupons(self.conn)
+        row = self.conn.execute(
+            "SELECT codigo, administrador_id FROM cupons_assinatura WHERE codigo = 'ALE20'"
+        ).fetchone()
+        self.assertEqual(row, ("ALE20", 9))
+
     def test_desconto_autorizado(self):
         self.assertEqual(consultar_desconto(self.conn, "ale20", 7, 2, 12000), 2000)
 
