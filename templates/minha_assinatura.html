@@ -45,6 +45,13 @@
 <h3>{{ plano['nome'] }}</h3>
 <div class="preco">R$ {{ '%.2f'|format(plano['preco_centavos'] / 100) }}</div>
 <p class="muted">{{ plano['periodo_meses'] }} {{ 'mês' if plano['periodo_meses'] == 1 else 'meses' }}</p>
+{% if assinatura and assinatura['tipo_assinatura'] == 'paga' and not assinatura['isento'] %}
+<form method="post" action="{{ url_for('solicitar_cobranca_personal') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_financeiro }}">
+<input type="hidden" name="plano_id" value="{{ plano['id'] }}">
+<button type="submit" style="background:#b7f657;color:#101a11;border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer">Solicitar cobrança</button>
+</form>
+{% endif %}
 </section>
 {% else %}
 <p class="muted">Nenhum plano disponível no momento.</p>
@@ -71,7 +78,7 @@
 </table>
 </div>
 </section>
-<p class="muted aviso">Esta tela é somente para consulta. Pagamento por Pix e aplicação de cupons serão habilitados após integração e testes de segurança.</p>
+<p class="muted aviso">A solicitação registra apenas uma cobrança pendente. O Pix e a aplicação de cupons serão habilitados após integração e testes de segurança.</p>
 </main>
 </body>
 </html>
