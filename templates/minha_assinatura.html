@@ -63,7 +63,7 @@
 <h2>Minhas cobranças</h2>
 <div class="tabela">
 <table>
-<thead><tr><th>Referência</th><th>Valor</th><th>Desconto</th><th>Status</th><th>Data</th></tr></thead>
+<thead><tr><th>Referência</th><th>Valor</th><th>Desconto</th><th>Status</th><th>Mercado Pago</th><th>Data</th></tr></thead>
 <tbody>
 {% for cobranca in cobrancas %}
 <tr>
@@ -71,10 +71,18 @@
 <td>R$ {{ '%.2f'|format(cobranca['valor_centavos'] / 100) }}</td>
 <td>R$ {{ '%.2f'|format(cobranca['desconto_centavos'] / 100) }}</td>
 <td class="status">{{ {'pendente':'Pendente','paga':'Paga','cancelada':'Cancelada','expirada':'Expirada'}.get(cobranca['status'], cobranca['status']) }}</td>
+<td>
+{% if cobranca['mercado_pago_order_id'] %}
+<span class="status">{{ cobranca['mercado_pago_status'] or 'Em processamento' }}</span>
+<div class="muted" style="font-size:12px;overflow-wrap:anywhere">{{ cobranca['mercado_pago_order_id'] }}</div>
+{% else %}
+<span class="muted">Ainda não gerado</span>
+{% endif %}
+</td>
 <td>{{ cobranca['criada_em'][:10] }}</td>
 </tr>
 {% else %}
-<tr><td colspan="5" class="muted">Nenhuma cobrança registrada.</td></tr>
+<tr><td colspan="6" class="muted">Nenhuma cobrança registrada.</td></tr>
 {% endfor %}
 </tbody>
 </table>
