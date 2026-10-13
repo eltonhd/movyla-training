@@ -4788,11 +4788,13 @@ def obter_resumo_financeiro_personal(conn, personal_id):
     cobrancas = []
     if assinatura:
         cobrancas = conn.execute("""
-            SELECT referencia, valor_centavos, status, criada_em, paga_em,
-                   periodo_meses, COALESCE(desconto_centavos, 0) AS desconto_centavos
-            FROM cobrancas_assinatura
-            WHERE assinatura_id = ?
-            ORDER BY id DESC LIMIT 20
+            SELECT c.referencia, c.valor_centavos, c.status, c.criada_em, c.paga_em,
+                   c.periodo_meses, COALESCE(c.desconto_centavos, 0) AS desconto_centavos,
+                   o.order_id AS mercado_pago_order_id, o.status AS mercado_pago_status
+            FROM cobrancas_assinatura c
+            LEFT JOIN orders_mercado_pago o ON o.cobranca_id = c.id
+            WHERE c.assinatura_id = ?
+            ORDER BY c.id DESC LIMIT 20
         """, (assinatura["id"],)).fetchall()
     return assinatura, cobrancas
 
