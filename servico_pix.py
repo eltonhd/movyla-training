@@ -4,7 +4,7 @@ Só pode ser chamado após validar a identidade do personal autenticado.
 Uma Order existente nunca é recriada; o resultado pode ser consultado
 na API autenticada do Mercado Pago.
 """
-from mercado_pago_pix import criar_pix, consultar_pagamento
+from mercado_pago_pix import criar_pix, consultar_pagamento, extrair_dados_pix_order
 from orders_mercado_pago import vincular_order
 
 
@@ -28,7 +28,7 @@ def gerar_pix_cobranca(conn, cobranca_id, personal_id, email_pagador):
         SELECT order_id FROM orders_mercado_pago WHERE cobranca_id = ?
     """, (cobranca_id,)).fetchone()
     if existente:
-        return consultar_pagamento(existente["order_id"])
+        return extrair_dados_pix_order(consultar_pagamento(existente["order_id"]))
     retorno = criar_pix(
         cobranca["id"], cobranca["referencia"],
         cobranca["valor_centavos"], email_pagador
