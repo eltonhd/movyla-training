@@ -4801,7 +4801,7 @@ def solicitar_cobranca_personal():
     if not usuario_e_personal():
         return redirect("/")
     token = session.get("csrf_financeiro")
-    if not token or token != request.form.get("csrf_token"):
+    if not token or not secrets.compare_digest(token, request.form.get("csrf_token", "")):
         return "Solicitacao invalida", 400
     try:
         plano_id = int(request.form.get("plano_id", ""))
@@ -4810,7 +4810,6 @@ def solicitar_cobranca_personal():
     conn = conectar()
     try:
         # Serializa a verificacao e a criacao contra requisicoes simultaneas.
-        conn.commit()
         conn.execute("BEGIN IMMEDIATE")
         assinatura = conn.execute("""
             SELECT id FROM assinaturas_personais
