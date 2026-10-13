@@ -6,7 +6,15 @@ from datetime import date, timedelta
 from calendar import monthrange
 import sqlite3
 from decimal import Decimal, InvalidOperation
+from planos import criar_tabela_planos, listar_planos
+from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas, registrar_cobranca
+from renovacoes import preparar_renovacoes
+from orders_mercado_pago import preparar_vinculos_orders
+from servico_pix import gerar_pix_cobranca
+from webhook_mercado_pago import validar_assinatura_webhook
+from conciliacao_orders import conferir_order_autenticada, reconciliar_order_autenticada
 import os
+import secrets
 
 
 # ============================================================
@@ -202,6 +210,14 @@ def inicio():
     total_personais = 0
     alertas_financeiros = []
     aviso_assinatura_personal = None
+    indicadores_assinaturas = {
+        "pagas": 0,
+        "testes": 0,
+        "isentas": 0,
+        "sem_assinatura": 0,
+        "vencidas": 0,
+        "receita_prevista": 0.0,
+    }
 
     # ========================================================
     # OWNER
@@ -240,6 +256,47 @@ def inicio():
         """)
 
         total_exercicios = cursor.fetchone()[0]
+
+        # Indicadores calculados no servidor e limitados aos profissionais
+        # deste administrador, sem incluir parceiros isentos na receita.
+        cursor.execute("""
+            SELECT
+                u.id,
+                a.tipo_assinatura,
+                a.isento,
+                a.valor_mensal,
+                a.proximo_vencimento
+            FROM usuarios u
+            LEFT JOIN assinaturas_personais a ON a.personal_id = u.id
+            WHERE u.tipo = 'personal'
+              AND u.ativo = 1
+              AND u.responsavel_id = ?
+        """, (session["usuario_id"],))
+
+        hoje = date.today()
+        for linha in cursor.fetchall():
+            if linha["tipo_assinatura"] is None:
+                indicadores_assinaturas["sem_assinatura"] += 1
+                continue
+            if linha["isento"] or linha["tipo_assinatura"] == "isenta":
+                indicadores_assinaturas["isentas"] += 1
+                continue
+            vencimento = None
+            try:
+                if linha["proximo_vencimento"]:
+                    vencimento = date.fromisoformat(linha["proximo_vencimento"])
+            except (TypeError, ValueError):
+                pass
+            if vencimento is not None and vencimento < hoje:
+                indicadores_assinaturas["vencidas"] += 1
+            if linha["tipo_assinatura"] == "teste":
+                indicadores_assinaturas["testes"] += 1
+            elif linha["tipo_assinatura"] == "paga":
+                indicadores_assinaturas["pagas"] += 1
+                if vencimento is not None and vencimento >= hoje:
+                    indicadores_assinaturas["receita_prevista"] += max(
+                        0, linha["valor_mensal"] or 0
+                    )
 
         # ====================================================
         # ALERTAS FINANCEIROS DO ADMINISTRADOR
@@ -304,16 +361,21 @@ def inicio():
 
             if not isento and tipo in ("paga", "teste") and vencimento:
 
-                data_vencimento = date.fromisoformat(vencimento)
-                dias_restantes = (data_vencimento - date.today()).days
+                # Datas antigas ou incompletas não devem derrubar o dashboard.
+                try:
+                    data_vencimento = date.fromisoformat(vencimento)
+                except (TypeError, ValueError):
+                    data_vencimento = None
 
-                if dias_restantes <= 3:
+                if data_vencimento is not None:
+                    dias_restantes = (data_vencimento - date.today()).days
 
-                    aviso_assinatura_personal = {
-                        "tipo": tipo,
-                        "dias_restantes": dias_restantes,
-                        "vencimento": data_vencimento.strftime("%d/%m/%Y")
-                    }
+                    if dias_restantes <= 3:
+                        aviso_assinatura_personal = {
+                            "tipo": tipo,
+                            "dias_restantes": dias_restantes,
+                            "vencimento": data_vencimento.strftime("%d/%m/%Y")
+                        }
 
 
         cursor.execute("""
@@ -370,6 +432,7 @@ def inicio():
         total_exercicios=total_exercicios,
         total_personais=total_personais,
         alertas_financeiros=alertas_financeiros,
+        indicadores_assinaturas=indicadores_assinaturas,
         aviso_assinatura_personal=aviso_assinatura_personal
     )
 
@@ -4191,6 +4254,185 @@ def editar_exercicio(exercicio_id):
     )
 
 # ============================================================
+# ADMINISTRAR PLANOS (sem realizar cobranças)
+# ============================================================
+
+@app.route("/admin/planos", methods=["GET", "POST"])
+@login_obrigatorio
+def administrar_planos():
+    if not usuario_e_owner():
+        return redirect("/")
+
+    import secrets
+    from decimal import ROUND_HALF_UP
+    from planos import criar_tabela_planos
+
+    token = session.get("planos_csrf")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["planos_csrf"] = token
+
+    erro = None
+    sucesso = request.args.get("salvo") == "1"
+    conn = conectar()
+    try:
+        criar_tabela_planos(conn)
+        conn.commit()
+        if request.method == "POST":
+            if not secrets.compare_digest(
+                request.form.get("csrf_token", ""), token
+            ):
+                return "Requisição inválida.", 400
+
+            try:
+                plano_id = int(request.form.get("plano_id", ""))
+                nome = request.form.get("nome", "").strip()
+                meses = int(request.form.get("periodo_meses", ""))
+                valor_texto = request.form.get("preco", "").strip().replace(",", ".")
+                valor = Decimal(valor_texto)
+                ativo = int(request.form.get("ativo", "0"))
+
+                if not nome or len(nome) > 80:
+                    raise ValueError("Informe um nome com até 80 caracteres.")
+                if meses < 1 or meses > 120:
+                    raise ValueError("O período deve ter entre 1 e 120 meses.")
+                if not valor.is_finite() or valor < 0 or valor > 100000:
+                    raise ValueError("Informe um preço válido.")
+                if valor != valor.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP):
+                    raise ValueError("Use no máximo duas casas decimais.")
+                if ativo not in (0, 1):
+                    raise ValueError("Status inválido.")
+
+                cursor = conn.execute("""
+                    UPDATE planos_assinatura
+                    SET nome = ?, periodo_meses = ?, preco_centavos = ?, ativo = ?
+                    WHERE id = ?
+                """, (nome, meses, int(valor * 100), ativo, plano_id))
+                if cursor.rowcount != 1:
+                    raise ValueError("Plano não encontrado.")
+                conn.commit()
+                return redirect("/admin/planos?salvo=1")
+            except (ValueError, InvalidOperation, OverflowError) as exc:
+                erro = str(exc)
+
+        planos = conn.execute("""
+            SELECT id, codigo, nome, periodo_meses, preco_centavos, ativo
+            FROM planos_assinatura
+            ORDER BY periodo_meses, id
+        """).fetchall()
+        return render_template(
+            "admin_planos.html", planos=planos,
+            csrf_token=token, erro=erro, sucesso=sucesso
+        )
+    finally:
+        conn.close()
+
+
+# ============================================================
+# ADMINISTRAR CUPONS DE DESCONTO
+# ============================================================
+
+@app.route("/admin/cupons", methods=["GET", "POST"])
+@login_obrigatorio
+def administrar_cupons():
+    if not usuario_e_owner():
+        return redirect("/")
+
+    import secrets
+    from cobrancas import criar_tabela_cupons
+
+    token = session.get("cupons_csrf")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["cupons_csrf"] = token
+
+    erro = None
+    conn = conectar()
+    try:
+        criar_tabela_cupons(conn)
+        conn.commit()
+        if request.method == "POST":
+            if not secrets.compare_digest(request.form.get("csrf_token", ""), token):
+                return "Requisição inválida.", 400
+            try:
+                acao = request.form.get("acao", "criar")
+                if acao == "desativar":
+                    cupom_id = int(request.form.get("cupom_id", ""))
+                    cursor = conn.execute("""
+                        UPDATE cupons_assinatura SET ativo = 0
+                        WHERE id = ? AND usado_em IS NULL AND administrador_id = ?
+                    """, (cupom_id, session["usuario_id"]))
+                    if cursor.rowcount != 1:
+                        raise ValueError("Cupom indisponível.")
+                elif acao == "criar":
+                    codigo = request.form.get("codigo", "").strip().upper()
+                    valor = Decimal(request.form.get("desconto", "").strip().replace(",", "."))
+                    if not (3 <= len(codigo) <= 32) or not all(
+                        c.isascii() and (c.isupper() or c.isdigit() or c in "-_")
+                        for c in codigo
+                    ):
+                        raise ValueError("Código: 3 a 32 letras maiúsculas, números, - ou _. ")
+                    if not valor.is_finite() or valor <= 0 or valor > 100000:
+                        raise ValueError("Desconto inválido.")
+                    if valor != valor.quantize(Decimal("0.01")):
+                        raise ValueError("Máximo de duas casas decimais.")
+
+                    personal_texto = request.form.get("personal_id", "").strip()
+                    plano_texto = request.form.get("plano_id", "").strip()
+                    personal_id = int(personal_texto) if personal_texto else None
+                    plano_id = int(plano_texto) if plano_texto else None
+                    if personal_id is not None:
+                        existe = conn.execute("""
+                            SELECT 1 FROM usuarios
+                            WHERE id = ? AND tipo = 'personal' AND responsavel_id = ?
+                        """, (personal_id, session["usuario_id"])).fetchone()
+                        if not existe:
+                            raise ValueError("Personal inválido.")
+                    if plano_id is not None:
+                        existe = conn.execute("""
+                            SELECT 1 FROM planos_assinatura WHERE id = ? AND ativo = 1
+                        """, (plano_id,)).fetchone()
+                        if not existe:
+                            raise ValueError("Plano inválido.")
+                    conn.execute("""
+                        INSERT INTO cupons_assinatura
+                            (codigo, desconto_centavos, personal_id, plano_id, administrador_id)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (codigo, int(valor * 100), personal_id, plano_id, session["usuario_id"]))
+                else:
+                    raise ValueError("Ação inválida.")
+                conn.commit()
+                return redirect("/admin/cupons?salvo=1")
+            except (ValueError, InvalidOperation, OverflowError, sqlite3.IntegrityError) as exc:
+                conn.rollback()
+                erro = "Verifique os dados; código duplicado ou valor inválido." if isinstance(
+                    exc, sqlite3.IntegrityError
+                ) else str(exc)
+
+        cupons = conn.execute("""
+            SELECT c.*, u.nome AS personal_nome, p.nome AS plano_nome
+            FROM cupons_assinatura c
+            LEFT JOIN usuarios u ON u.id = c.personal_id
+            LEFT JOIN planos_assinatura p ON p.id = c.plano_id
+            WHERE c.administrador_id = ?
+            ORDER BY c.id DESC
+        """, (session["usuario_id"],)).fetchall()
+        personais = conn.execute("""
+            SELECT id, nome FROM usuarios
+            WHERE tipo = 'personal' AND responsavel_id = ?
+            ORDER BY nome
+        """, (session["usuario_id"],)).fetchall()
+        planos = conn.execute("""
+            SELECT id, nome FROM planos_assinatura WHERE ativo = 1 ORDER BY periodo_meses
+        """).fetchall()
+        return render_template("admin_cupons.html", cupons=cupons,
+            personais=personais, planos=planos, erro=erro,
+            csrf_token=token, sucesso=request.args.get("salvo") == "1")
+    finally:
+        conn.close()
+
+
+# ============================================================
 # CALCULAR VENCIMENTO DA ASSINATURA
 # ============================================================
 
@@ -4266,6 +4508,16 @@ def gerenciar_assinatura(personal_id):
 
     assinatura = cursor.fetchone()
 
+    from planos import criar_tabela_planos
+    criar_tabela_planos(conn)
+    conn.commit()
+    planos_disponiveis = conn.execute("""
+        SELECT id, nome, periodo_meses, preco_centavos
+        FROM planos_assinatura
+        WHERE ativo = 1
+        ORDER BY periodo_meses
+    """).fetchall()
+
     # ========================================================
     # SALVAR ASSINATURA
     # ========================================================
@@ -4274,6 +4526,22 @@ def gerenciar_assinatura(personal_id):
 
         plano = request.form.get("plano", "").strip()
         valor_texto = request.form.get("valor_mensal", "").strip()
+        plano_catalogo_id = request.form.get("plano_catalogo_id", "").strip()
+        if plano_catalogo_id:
+            try:
+                plano_catalogo_id = int(plano_catalogo_id)
+            except ValueError:
+                conn.close()
+                return "Plano selecionado inválido.", 400
+            plano_catalogo = conn.execute("""
+                SELECT nome, periodo_meses, preco_centavos
+                FROM planos_assinatura WHERE id = ? AND ativo = 1
+            """, (plano_catalogo_id,)).fetchone()
+            if plano_catalogo is None:
+                conn.close()
+                return "Plano indisponível.", 400
+            plano = plano_catalogo["nome"]
+            valor_texto = str(Decimal(plano_catalogo["preco_centavos"]) / 100)
         tipo_assinatura = request.form.get(
             "tipo_assinatura", "paga"
         ).strip()
@@ -4285,6 +4553,9 @@ def gerenciar_assinatura(personal_id):
         periodo_unidade = request.form.get(
             "periodo_unidade", ""
         ).strip()
+        if plano_catalogo_id:
+            periodo_quantidade = str(plano_catalogo["periodo_meses"])
+            periodo_unidade = "meses"
         data_inicio = request.form.get("data_inicio", "").strip()
         proximo_vencimento = request.form.get(
             "proximo_vencimento", ""
@@ -4425,6 +4696,7 @@ def gerenciar_assinatura(personal_id):
         "gerenciar_assinatura.html",
         personal=personal,
         assinatura=assinatura,
+        planos_disponiveis=planos_disponiveis,
         hoje=date.today().isoformat()
     )
 
@@ -4492,13 +4764,235 @@ def inicializar_tabelas_financeiras():
               AND tipo_assinatura = 'paga'
         """)
 
+        criar_tabela_planos(conn)
+        criar_tabela_cobrancas(conn)
+        criar_tabela_cupons(conn)
+        preparar_descontos_cobrancas(conn)
+        preparar_renovacoes(conn)
+        preparar_vinculos_orders(conn)
         conn.commit()
 
     finally:
         conn.close()
 
 
+
+from banco_homologacao import inicializar_banco_homologacao
+from admin_inicial_homologacao import criar_admin_inicial
+
+inicializar_banco_homologacao()
 inicializar_tabelas_financeiras()
+criar_admin_inicial()
+
+# ============================================================
+# ÁREA FINANCEIRA DO PERSONAL (CONSULTA, SEM PAGAMENTO)
+# ============================================================
+
+def obter_resumo_financeiro_personal(conn, personal_id):
+    """Consulta somente dados associados à conta autenticada."""
+    assinatura = conn.execute("""
+        SELECT id, plano, tipo_assinatura, isento, proximo_vencimento
+        FROM assinaturas_personais WHERE personal_id = ?
+    """, (personal_id,)).fetchone()
+    cobrancas = []
+    if assinatura:
+        cobrancas = conn.execute("""
+            SELECT c.id, c.referencia, c.valor_centavos, c.status, c.criada_em, c.paga_em,
+                   c.periodo_meses, COALESCE(c.desconto_centavos, 0) AS desconto_centavos,
+                   o.order_id AS mercado_pago_order_id, o.status AS mercado_pago_status
+            FROM cobrancas_assinatura c
+            LEFT JOIN orders_mercado_pago o ON o.cobranca_id = c.id
+            WHERE c.assinatura_id = ?
+            ORDER BY c.id DESC LIMIT 20
+        """, (assinatura["id"],)).fetchall()
+    return assinatura, cobrancas
+
+
+@app.route("/minha-assinatura/solicitar", methods=["POST"])
+@login_obrigatorio
+def solicitar_cobranca_personal():
+    if not usuario_e_personal():
+        return redirect("/")
+    token = session.get("csrf_financeiro")
+    if not token or not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+        return "Solicitacao invalida", 400
+    try:
+        plano_id = int(request.form.get("plano_id", ""))
+    except (TypeError, ValueError):
+        return "Plano invalido", 400
+    conn = conectar()
+    try:
+        # Serializa a verificacao e a criacao contra requisicoes simultaneas.
+        conn.execute("BEGIN IMMEDIATE")
+        assinatura = conn.execute("""
+            SELECT id FROM assinaturas_personais
+            WHERE personal_id = ? AND tipo_assinatura = 'paga' AND COALESCE(isento, 0) = 0
+        """, (session["usuario_id"],)).fetchone()
+        if assinatura is None:
+            conn.rollback()
+            return "Assinatura indisponivel", 400
+        pendente = conn.execute("""
+            SELECT id FROM cobrancas_assinatura
+            WHERE assinatura_id = ? AND status = 'pendente'
+        """, (assinatura["id"],)).fetchone()
+        if pendente:
+            conn.rollback()
+            return redirect("/minha-assinatura")
+        registrar_cobranca(
+            conn, assinatura["id"], plano_id, "movyla-" + secrets.token_hex(16)
+        )
+        conn.commit()
+        return redirect("/minha-assinatura")
+    except ValueError as exc:
+        conn.rollback()
+        return str(exc), 400
+    finally:
+        conn.close()
+
+
+@app.route("/webhooks/mercado-pago/orders", methods=["POST"])
+def webhook_orders_mercado_pago():
+    # Por padrão não recebe notificações em produção.
+    if os.environ.get("MOVYLA_WEBHOOK_TESTE_HABILITADO") != "1":
+        return "", 404
+    segredo = os.environ.get("MERCADO_PAGO_WEBHOOK_SECRET", "")
+    if not segredo:
+        return "", 503
+    if request.content_length is not None and request.content_length > 16384:
+        return "", 413
+    if len(request.get_data(cache=True)) > 16384:
+        return "", 413
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return "", 400
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return "", 400
+    order_id = data.get("id")
+    if not isinstance(order_id, str) or not order_id or len(order_id) > 128:
+        return "", 400
+    if not validar_assinatura_webhook(
+        segredo,
+        request.headers.get("x-signature", ""),
+        request.headers.get("x-request-id", ""),
+        order_id,
+    ):
+        return "", 401
+    conn = conectar()
+    try:
+        # Apenas uma Order previamente vinculada pode ser consultada.
+        registro = conn.execute("""
+            SELECT cobranca_id FROM orders_mercado_pago WHERE order_id = ?
+        """, (order_id,)).fetchone()
+        if registro is None:
+            return "", 202
+        # Consulta servidor-servidor. Nunca confia no status do webhook.
+        # Dupla habilitação, somente após testes reais de integração.
+        if os.environ.get("MOVYLA_RENOVACAO_PIX_TESTE_HABILITADA") == "1":
+            try:
+                vencimento, aplicada = reconciliar_order_autenticada(
+                    conn, registro["cobranca_id"]
+                )
+                conn.commit()
+                app.logger.info(
+                    "Conciliacao Pix cobranca %s, renovacao aplicada=%s",
+                    registro["cobranca_id"], aplicada
+                )
+                return "", 200
+            except Exception:
+                conn.rollback()
+                raise
+        comprovado = conferir_order_autenticada(conn, registro["cobranca_id"])
+        app.logger.info(
+            "Order Pix autenticada e conferida para cobranca %s (sem liquidacao)",
+            comprovado.cobranca_id
+        )
+        return "", 200
+    except ValueError:
+        # Pode ser notificação de Order ainda pendente; não liquidar.
+        return "", 202
+    except Exception:
+        app.logger.exception("Falha ao consultar Order autenticada")
+        return "", 503
+    finally:
+        conn.close()
+
+
+@app.route("/minha-assinatura/pix/<int:cobranca_id>", methods=["POST"])
+@login_obrigatorio
+def gerar_pix_personal(cobranca_id):
+    # Desabilitado por padrão: liberar somente no ambiente de testes.
+    if os.environ.get("MOVYLA_PIX_TESTE_HABILITADO") != "1":
+        return "Pix ainda não habilitado", 404
+    if not usuario_e_personal():
+        return "Acesso negado", 403
+    token = session.get("csrf_financeiro")
+    if not token or not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+        return "Solicitacao invalida", 400
+    email = request.form.get("email_pagador", "").strip()
+    if len(email) > 254 or "@" not in email:
+        return "E-mail invalido", 400
+    conn = conectar()
+    try:
+        # O bloqueio impede duas requisicoes concorrentes de criarem Orders
+        # diferentes para a mesma cobranca. Timeout bancario e de 15s.
+        conn.execute("BEGIN IMMEDIATE")
+        resultado = gerar_pix_cobranca(
+            conn, cobranca_id, session["usuario_id"], email
+        )
+        conn.commit()
+        # Nunca interpretar a criacao de QR Code como pagamento confirmado.
+        metodo = resultado.get("payment_method") or {}
+        qr_code = resultado.get("qr_code") or metodo.get("qr_code")
+        qr_code_base64 = resultado.get("qr_code_base64") or metodo.get("qr_code_base64")
+        ticket_url = resultado.get("ticket_url") or metodo.get("ticket_url")
+        if qr_code_base64 and (not isinstance(qr_code_base64, str) or
+                               len(qr_code_base64) > 250000 or
+                               not all(c.isalnum() or c in "+/=" for c in qr_code_base64)):
+            qr_code_base64 = None
+        if not isinstance(qr_code, str) or len(qr_code) > 5000:
+            qr_code = None
+        if not isinstance(ticket_url, str) or not ticket_url.startswith(
+            "https://"
+        ) or len(ticket_url) > 2048:
+            ticket_url = None
+        return render_template(
+            "pix_teste.html", qr_code=qr_code,
+            qr_code_base64=qr_code_base64, ticket_url=ticket_url,
+            status=resultado.get("status"), cobranca_id=cobranca_id
+        )
+    except ValueError as exc:
+        conn.rollback()
+        return str(exc), 400
+    except Exception:
+        conn.rollback()
+        app.logger.exception("Falha ao preparar Pix da cobranca %s", cobranca_id)
+        return "Nao foi possivel preparar o Pix. Tente novamente.", 503
+    finally:
+        conn.close()
+
+
+@app.route("/minha-assinatura")
+@login_obrigatorio
+def minha_assinatura():
+    if not usuario_e_personal():
+        return redirect("/")
+    conn = conectar()
+    try:
+        assinatura, cobrancas = obter_resumo_financeiro_personal(
+            conn, session["usuario_id"]
+        )
+        planos_disponiveis = listar_planos(conn)
+        session.setdefault("csrf_financeiro", secrets.token_urlsafe(32))
+        return render_template(
+            "minha_assinatura.html", assinatura=assinatura,
+            planos=planos_disponiveis, cobrancas=cobrancas,
+            csrf_financeiro=session["csrf_financeiro"],
+            pix_teste_habilitado=os.environ.get("MOVYLA_PIX_TESTE_HABILITADO") == "1"
+        )
+    finally:
+        conn.close()
+
 
 # ============================================================
 # EXECUTAR

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planos de assinatura | MOVYLA</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_premium.css') }}">
+<style>
+*{box-sizing:border-box}
+body{background:#090d0b;color:#f5f8f5;font-family:Arial,sans-serif;margin:0}
+main{max-width:1080px;margin:auto;padding:32px 18px 70px}
+a{color:#b7f657;text-decoration:none}
+h1{font-size:clamp(26px,4vw,38px);margin:20px 0 8px}
+p{color:#a6b4a9;line-height:1.5}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-top:25px}
+.card{background:#101c17;border:1px solid #244536;border-radius:18px;padding:22px}
+.card h2{margin:0 0 18px;color:#b7f657}
+label{display:block;font-size:13px;color:#c5d4c9;margin:13px 0 6px}
+input,select{width:100%;background:#0b120e;border:1px solid #345341;border-radius:9px;color:white;padding:12px;font:inherit}
+button{background:#b7f657;color:#07120a;border:0;border-radius:10px;padding:13px 18px;font-weight:800;margin-top:20px;cursor:pointer;width:100%}
+.notice{padding:13px 16px;border-radius:10px;margin-top:16px;background:#16271d;border:1px solid #426b4d}
+.error{border-color:#bb5252;color:#ffb3b3}
+.small{font-size:12px;color:#a6b4a9}
+</style>
+</head>
+<body>
+<main>
+<a href="{{ url_for('inicio') }}">← Voltar ao dashboard</a>
+<h1>Planos de assinatura</h1>
+<p>Defina os valores e períodos oferecidos aos profissionais. As alterações não cobram ninguém nem alteram automaticamente assinaturas já contratadas.</p>
+{% if sucesso %}<div class="notice" role="status">Plano atualizado com sucesso.</div>{% endif %}
+{% if erro %}<div class="notice error" role="alert">{{ erro }}</div>{% endif %}
+<div class="cards">
+{% for plano in planos %}
+<section class="card">
+<h2>{{ plano.nome }}</h2>
+<form method="post" action="{{ url_for('administrar_planos') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="plano_id" value="{{ plano.id }}">
+<label for="nome-{{ plano.id }}">Nome do plano</label>
+<input id="nome-{{ plano.id }}" name="nome" maxlength="80" required value="{{ plano.nome }}">
+<label for="meses-{{ plano.id }}">Duração (meses)</label>
+<input id="meses-{{ plano.id }}" type="number" name="periodo_meses" min="1" max="120" required value="{{ plano.periodo_meses }}">
+<label for="preco-{{ plano.id }}">Preço total (R$)</label>
+<input id="preco-{{ plano.id }}" type="number" name="preco" min="0" max="100000" step="0.01" required value="{{ '%.2f'|format(plano.preco_centavos / 100) }}">
+<label for="ativo-{{ plano.id }}">Disponibilidade</label>
+<select id="ativo-{{ plano.id }}" name="ativo">
+<option value="1" {% if plano.ativo %}selected{% endif %}>Ativo</option>
+<option value="0" {% if not plano.ativo %}selected{% endif %}>Inativo</option>
+</select>
+<button type="submit">Salvar plano</button>
+</form>
+<p class="small">Código interno: {{ plano.codigo }}</p>
+</section>
+{% endfor %}
+</div>
+</main>
+</body>
+</html>

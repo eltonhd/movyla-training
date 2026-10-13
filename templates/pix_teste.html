@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pix de teste | MOVYLA Training</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+<style>
+body{background:#080e0a;color:#f4fff5;font-family:Arial,sans-serif}
+.pix-box{max-width:560px;margin:6vh auto;padding:26px;background:#121d16;border:1px solid #294d35;border-radius:18px}
+h1{color:#b7f657}
+.aviso{color:#b7f657;font-weight:700}
+.muted{color:#a6b4a9}
+img{max-width:260px;width:100%;display:block;margin:22px auto;background:white;padding:12px;border-radius:12px}
+textarea{width:100%;min-height:100px;background:#09130d;color:#f4fff5;border:1px solid #44634c;border-radius:8px;padding:12px;overflow-wrap:anywhere}
+button{background:#b7f657;color:#101a11;border:0;padding:12px 18px;border-radius:10px;font-weight:800;cursor:pointer}
+a{color:#b7f657}
+</style>
+</head>
+<body>
+<main class="pix-box">
+<a href="{{ url_for('minha_assinatura') }}">← Minha assinatura</a>
+<h1>Pix — ambiente de testes</h1>
+<p class="aviso">Pedido criado não significa pagamento confirmado.</p>
+<p class="muted">Cobrança nº {{ cobranca_id }}. Status informado pelo provedor: {{ status or 'Em processamento' }}.</p>
+{% if qr_code_base64 %}
+<img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code Pix de teste">
+{% endif %}
+{% if qr_code %}
+<label for="codigo-pix">Código Pix copia-e-cola</label>
+<textarea id="codigo-pix" readonly>{{ qr_code }}</textarea>
+<button type="button" id="copiar-pix">Copiar código Pix</button>
+<script>
+document.getElementById('copiar-pix').addEventListener('click', async function () {
+  const campo = document.getElementById('codigo-pix');
+  try {
+    await navigator.clipboard.writeText(campo.value);
+    this.textContent = 'Copiado!';
+  } catch (e) {
+    campo.select();
+    this.textContent = 'Selecione e copie o código';
+  }
+});
+</script>
+{% elif not qr_code_base64 %}
+<p class="muted">O provedor ainda não retornou instruções Pix. Volte à assinatura e consulte a cobrança.</p>
+{% endif %}
+{% if ticket_url %}
+<p><a href="{{ ticket_url }}" target="_blank" rel="noopener noreferrer">Abrir instruções de pagamento</a></p>
+{% endif %}
+<p class="muted">O vencimento da assinatura só poderá ser atualizado após confirmação autenticada do pagamento.</p>
+</main>
+</body>
+</html>
