@@ -9,6 +9,7 @@ from decimal import Decimal, InvalidOperation
 from planos import criar_tabela_planos, listar_planos
 from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas, registrar_cobranca
 from renovacoes import preparar_renovacoes
+from orders_mercado_pago import preparar_vinculos_orders
 import os
 import secrets
 
@@ -4765,6 +4766,7 @@ def inicializar_tabelas_financeiras():
         criar_tabela_cupons(conn)
         preparar_descontos_cobrancas(conn)
         preparar_renovacoes(conn)
+        preparar_vinculos_orders(conn)
         conn.commit()
 
     finally:
