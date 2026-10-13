@@ -72,17 +72,19 @@ def criar_tabela_cupons(conn):
         conn.execute("ALTER TABLE cupons_assinatura ADD COLUMN administrador_id INTEGER")
 
 
-def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos):
+def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos, administrador_id=None):
     """Calcula o desconto elegível sem consumir o cupom."""
     if not isinstance(codigo, str) or not codigo.strip():
         raise ValueError("Cupom inválido.")
     cupom = conn.execute("""
-        SELECT desconto_centavos, personal_id, plano_id
+        SELECT desconto_centavos, personal_id, plano_id, administrador_id
         FROM cupons_assinatura
         WHERE codigo = ? AND ativo = 1 AND usado_em IS NULL
     """, (codigo.strip().upper(),)).fetchone()
     if cupom is None:
         raise ValueError("Cupom indisponível.")
+    if administrador_id is not None and cupom[3] != administrador_id:
+        raise ValueError('Cupom de outro administrador.')
     if cupom[1] is not None and cupom[1] != personal_id:
         raise ValueError("Cupom restrito a outro personal.")
     if cupom[2] is not None and cupom[2] != plano_id:
