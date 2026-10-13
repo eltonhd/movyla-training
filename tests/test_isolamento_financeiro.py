@@ -6,6 +6,7 @@ import unittest
 
 from cobrancas import criar_tabela_cobrancas
 from planos import criar_tabela_planos
+from orders_mercado_pago import preparar_vinculos_orders, vincular_order
 
 
 def carregar_consulta():
@@ -50,6 +51,9 @@ class TestarIsolamentoFinanceiro(unittest.TestCase):
             ALTER TABLE cobrancas_assinatura
             ADD COLUMN desconto_centavos INTEGER DEFAULT 0
         """)
+        preparar_vinculos_orders(self.conn)
+        vincular_order(self.conn, 1, "ORD-11", "action_required")
+        vincular_order(self.conn, 2, "ORD-22", "action_required")
         self.consultar = carregar_consulta()
 
     def tearDown(self):
@@ -59,11 +63,13 @@ class TestarIsolamentoFinanceiro(unittest.TestCase):
         assinatura, cobrancas = self.consultar(self.conn, 11)
         self.assertEqual(assinatura["id"], 1)
         self.assertEqual([x["referencia"] for x in cobrancas], ["somente-11"])
+        self.assertEqual(cobrancas[0]["mercado_pago_order_id"], "ORD-11")
 
     def test_personal_22_so_ve_proprios_dados(self):
         assinatura, cobrancas = self.consultar(self.conn, 22)
         self.assertEqual(assinatura["id"], 2)
         self.assertEqual([x["referencia"] for x in cobrancas], ["somente-22"])
+        self.assertEqual(cobrancas[0]["mercado_pago_order_id"], "ORD-22")
 
     def test_sem_assinatura_nao_ve_cobrancas(self):
         assinatura, cobrancas = self.consultar(self.conn, 999)
