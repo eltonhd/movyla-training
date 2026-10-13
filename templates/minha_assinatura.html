@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minha assinatura | MOVYLA Training</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_premium.css') }}">
+<style>
+.financeiro-personal{max-width:1080px;margin:0 auto;padding:30px 18px 70px;color:#f4fff5}
+.financeiro-personal h1{color:#b7f657;margin-bottom:8px}
+.financeiro-personal .subtitulo{color:#a6b4a9;margin-bottom:25px}
+.financeiro-personal .painel{background:#121d16;border:1px solid #294d35;border-radius:18px;padding:22px;margin:18px 0}
+.financeiro-personal .grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:15px}
+.financeiro-personal .preco{font-size:27px;color:#b7f657;font-weight:800;margin:12px 0}
+.financeiro-personal .muted{color:#a6b4a9}
+.financeiro-personal table{width:100%;border-collapse:collapse;min-width:610px}
+.financeiro-personal th,.financeiro-personal td{padding:13px;text-align:left;border-bottom:1px solid #294d35}
+.financeiro-personal th{color:#b7f657}
+.financeiro-personal .tabela{overflow-x:auto}
+.financeiro-personal .voltar{color:#b7f657;text-decoration:none}
+.financeiro-personal .status{font-weight:700}
+.financeiro-personal .aviso{border-left:3px solid #b7f657;padding-left:14px}
+</style>
+</head>
+<body>
+<main class="financeiro-personal">
+<a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao painel</a>
+<h1>Minha assinatura MOVYLA</h1>
+<p class="subtitulo">Consulte seu plano, vencimento e histórico de cobranças.</p>
+<section class="painel">
+<h2>Situação atual</h2>
+{% if assinatura %}
+<p><strong>Plano:</strong> {{ assinatura['plano'] }}</p>
+<p><strong>Tipo:</strong> {{ 'Parceiro isento' if assinatura['isento'] else ('Teste gratuito' if assinatura['tipo_assinatura'] == 'teste' else 'Assinatura paga') }}</p>
+<p><strong>Próximo vencimento:</strong> {{ assinatura['proximo_vencimento'] or 'Não definido' }}</p>
+{% else %}
+<p class="muted">Ainda não há assinatura cadastrada para sua conta.</p>
+{% endif %}
+</section>
+<h2>Planos disponíveis</h2>
+<div class="grade">
+{% for plano in planos %}
+<section class="painel">
+<h3>{{ plano['nome'] }}</h3>
+<div class="preco">R$ {{ '%.2f'|format(plano['preco_centavos'] / 100) }}</div>
+<p class="muted">{{ plano['periodo_meses'] }} {{ 'mês' if plano['periodo_meses'] == 1 else 'meses' }}</p>
+</section>
+{% else %}
+<p class="muted">Nenhum plano disponível no momento.</p>
+{% endfor %}
+</div>
+<section class="painel">
+<h2>Minhas cobranças</h2>
+<div class="tabela">
+<table>
+<thead><tr><th>Referência</th><th>Valor</th><th>Desconto</th><th>Status</th><th>Data</th></tr></thead>
+<tbody>
+{% for cobranca in cobrancas %}
+<tr>
+<td>{{ cobranca['referencia'] }}</td>
+<td>R$ {{ '%.2f'|format(cobranca['valor_centavos'] / 100) }}</td>
+<td>R$ {{ '%.2f'|format(cobranca['desconto_centavos'] / 100) }}</td>
+<td class="status">{{ {'pendente':'Pendente','paga':'Paga','cancelada':'Cancelada','expirada':'Expirada'}.get(cobranca['status'], cobranca['status']) }}</td>
+<td>{{ cobranca['criada_em'][:10] }}</td>
+</tr>
+{% else %}
+<tr><td colspan="5" class="muted">Nenhuma cobrança registrada.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+<p class="muted aviso">Esta tela é somente para consulta. Pagamento por Pix e aplicação de cupons serão habilitados após integração e testes de segurança.</p>
+</main>
+</body>
+</html>
