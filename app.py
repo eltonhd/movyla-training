@@ -4776,6 +4776,24 @@ inicializar_tabelas_financeiras()
 # ÁREA FINANCEIRA DO PERSONAL (CONSULTA, SEM PAGAMENTO)
 # ============================================================
 
+def obter_resumo_financeiro_personal(conn, personal_id):
+    """Consulta somente dados associados à conta autenticada."""
+    assinatura = conn.execute("""
+        SELECT id, plano, tipo_assinatura, isento, proximo_vencimento
+        FROM assinaturas_personais WHERE personal_id = ?
+    """, (personal_id,)).fetchone()
+    cobrancas = []
+    if assinatura:
+        cobrancas = conn.execute("""
+            SELECT referencia, valor_centavos, status, criada_em, paga_em,
+                   periodo_meses, COALESCE(desconto_centavos, 0) AS desconto_centavos
+            FROM cobrancas_assinatura
+            WHERE assinatura_id = ?
+            ORDER BY id DESC LIMIT 20
+        """, (assinatura["id"],)).fetchall()
+    return assinatura, cobrancas
+
+
 @app.route("/minha-assinatura")
 @login_obrigatorio
 def minha_assinatura():
@@ -4783,20 +4801,10 @@ def minha_assinatura():
         return redirect("/")
     conn = conectar()
     try:
-        assinatura = conn.execute("""
-            SELECT id, plano, tipo_assinatura, isento, proximo_vencimento
-            FROM assinaturas_personais WHERE personal_id = ?
-        """, (session["usuario_id"],)).fetchone()
+        assinatura, cobrancas = obter_resumo_financeiro_personal(
+            conn, session["usuario_id"]
+        )
         planos_disponiveis = listar_planos(conn)
-        cobrancas = []
-        if assinatura:
-            cobrancas = conn.execute("""
-                SELECT referencia, valor_centavos, status, criada_em, paga_em,
-                       periodo_meses, COALESCE(desconto_centavos, 0) AS desconto_centavos
-                FROM cobrancas_assinatura
-                WHERE assinatura_id = ?
-                ORDER BY id DESC LIMIT 20
-            """, (assinatura["id"],)).fetchall()
         return render_template(
             "minha_assinatura.html", assinatura=assinatura,
             planos=planos_disponiveis, cobrancas=cobrancas
