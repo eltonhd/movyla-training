@@ -67,6 +67,9 @@ def criar_tabela_cupons(conn):
             cobranca_id INTEGER UNIQUE
         )
     """)
+    colunas = {col[1] for col in conn.execute("PRAGMA table_info(cupons_assinatura)")}
+    if "administrador_id" not in colunas:
+        conn.execute("ALTER TABLE cupons_assinatura ADD COLUMN administrador_id INTEGER")
 
 
 def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos):
