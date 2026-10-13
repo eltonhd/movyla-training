@@ -59,5 +59,9 @@ def conferir_order_autenticada(conn, cobranca_id):
 
 def reconciliar_order_autenticada(conn, cobranca_id, hoje=None):
     """Liquida apenas após GET autenticado; commit pertence ao chamador."""
+    # Serializa concorrência entre notificações da mesma Order no SQLite.
+    # O chamador deve fazer commit/rollback após o retorno.
+    if not conn.in_transaction:
+        conn.execute("BEGIN IMMEDIATE")
     comprovado = conferir_order_autenticada(conn, cobranca_id)
     return liquidar_pagamento_verificado(conn, comprovado, hoje=hoje)
