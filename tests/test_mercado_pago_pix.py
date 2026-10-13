@@ -34,6 +34,14 @@ class TestarMercadoPagoPix(unittest.TestCase):
         with self.assertRaises(ValueError):
             mp.criar_pix(7, "ref", 50.5, "a@example.com")
 
+    def test_recusa_booleano_como_valor(self):
+        with self.assertRaises(ValueError):
+            mp.criar_pix(7, "ref", True, "a@example.com")
+
+    def test_recusa_booleano_como_id(self):
+        with self.assertRaises(ValueError):
+            mp.criar_pix(True, "ref", 5000, "a@example.com")
+
     def test_recusa_identificador_nao_numerico(self):
         with self.assertRaises(ValueError):
             mp.consultar_pagamento("../outro")
