@@ -131,6 +131,50 @@ def registrar_cobranca_com_cupom(conn, assinatura_id, plano_id, referencia,
         raise
 
 
+def cancelar_cobranca_pendente(conn, cobranca_id):
+    """Cancela uma cobrança pendente e libera seu cupom sem tocar em pagamentos."""
+    conn.execute("SAVEPOINT movyla_cancelamento")
+    try:
+        cursor = conn.execute("""
+            UPDATE cobrancas_assinatura
+            SET status = 'cancelada'
+            WHERE id = ? AND status = 'pendente'
+        """, (cobranca_id,))
+        if cursor.rowcount != 1:
+            raise ValueError("Cobrança inexistente ou não está pendente.")
+        conn.execute("""
+            UPDATE cupons_assinatura
+            SET cobranca_id = NULL
+            WHERE cobranca_id = ? AND usado_em IS NULL
+        """, (cobranca_id,))
+        conn.execute("RELEASE SAVEPOINT movyla_cancelamento")
+    except Exception:
+        conn.execute("ROLLBACK TO SAVEPOINT movyla_cancelamento")
+        conn.execute("RELEASE SAVEPOINT movyla_cancelamento")
+        raise
+
+
+def expirar_cobranca_pendente(conn, cobranca_id):
+    """Expira uma cobrança pendente e libera reserva de cupom não utilizado."""
+    conn.execute("SAVEPOINT movyla_expiracao")
+    try:
+        cursor = conn.execute("""
+            UPDATE cobrancas_assinatura SET status = 'expirada'
+            WHERE id = ? AND status = 'pendente'
+        """, (cobranca_id,))
+        if cursor.rowcount != 1:
+            raise ValueError("Cobrança inexistente ou não está pendente.")
+        conn.execute("""
+            UPDATE cupons_assinatura SET cobranca_id = NULL
+            WHERE cobranca_id = ? AND usado_em IS NULL
+        """, (cobranca_id,))
+        conn.execute("RELEASE SAVEPOINT movyla_expiracao")
+    except Exception:
+        conn.execute("ROLLBACK TO SAVEPOINT movyla_expiracao")
+        conn.execute("RELEASE SAVEPOINT movyla_expiracao")
+        raise
+
+
 def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos, administrador_id=None):
     """Calcula o desconto elegível sem consumir o cupom."""
     if not isinstance(codigo, str) or not codigo.strip():
