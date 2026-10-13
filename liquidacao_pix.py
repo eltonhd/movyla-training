@@ -33,6 +33,10 @@ def liquidar_pagamento_verificado(conn, pagamento, hoje=None):
         raise ValueError("Valor inválido.")
     if not isinstance(pagamento.identificador_externo, str) or not pagamento.identificador_externo.strip():
         raise ValueError("Identificador externo inválido.")
+    if not isinstance(pagamento.moeda, str):
+        raise ValueError("Moeda inválida.")
+    if not isinstance(pagamento.status, str):
+        raise ValueError("Status inválido.")
     if not compare_digest(pagamento.moeda.upper(), "BRL"):
         raise ValueError("Moeda não autorizada.")
     if pagamento.status != "aprovado":
