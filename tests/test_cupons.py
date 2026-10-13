@@ -25,6 +25,26 @@ class TestarCupons(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row, ("ALE20", 9))
 
+    def test_administrador_correto(self):
+        self.conn.execute(
+            "UPDATE cupons_assinatura SET administrador_id = 5 WHERE codigo = 'ALE20'"
+        )
+        self.assertEqual(
+            consultar_desconto(self.conn, "ALE20", 7, 2, 12000, administrador_id=5),
+            2000
+        )
+
+    def test_administrador_diferente(self):
+        self.conn.execute(
+            "UPDATE cupons_assinatura SET administrador_id = 5 WHERE codigo = 'ALE20'"
+        )
+        with self.assertRaises(ValueError):
+            consultar_desconto(self.conn, "ALE20", 7, 2, 12000, administrador_id=6)
+
+    def test_cupom_sem_dono_nao_passa_validacao_de_administrador(self):
+        with self.assertRaises(ValueError):
+            consultar_desconto(self.conn, "ALE20", 7, 2, 12000, administrador_id=5)
+
     def test_desconto_autorizado(self):
         self.assertEqual(consultar_desconto(self.conn, "ale20", 7, 2, 12000), 2000)
 
