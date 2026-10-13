@@ -10,6 +10,7 @@ from planos import criar_tabela_planos, listar_planos
 from cobrancas import criar_tabela_cobrancas, criar_tabela_cupons, preparar_descontos_cobrancas, registrar_cobranca
 from renovacoes import preparar_renovacoes
 from orders_mercado_pago import preparar_vinculos_orders
+from servico_pix import gerar_pix_cobranca
 import os
 import secrets
 
@@ -4837,6 +4838,42 @@ def solicitar_cobranca_personal():
     except ValueError as exc:
         conn.rollback()
         return str(exc), 400
+    finally:
+        conn.close()
+
+
+@app.route("/minha-assinatura/pix/<int:cobranca_id>", methods=["POST"])
+@login_obrigatorio
+def gerar_pix_personal(cobranca_id):
+    # Desabilitado por padrão: liberar somente no ambiente de testes.
+    if os.environ.get("MOVYLA_PIX_TESTE_HABILITADO") != "1":
+        return "Pix ainda não habilitado", 404
+    if not usuario_e_personal():
+        return "Acesso negado", 403
+    token = session.get("csrf_financeiro")
+    if not token or not secrets.compare_digest(token, request.form.get("csrf_token", "")):
+        return "Solicitacao invalida", 400
+    email = request.form.get("email_pagador", "").strip()
+    if len(email) > 254 or "@" not in email:
+        return "E-mail invalido", 400
+    conn = conectar()
+    try:
+        # O bloqueio impede duas requisicoes concorrentes de criarem Orders
+        # diferentes para a mesma cobranca. Timeout bancario e de 15s.
+        conn.execute("BEGIN IMMEDIATE")
+        resultado = gerar_pix_cobranca(
+            conn, cobranca_id, session["usuario_id"], email
+        )
+        conn.commit()
+        # Nunca interpretar a criacao de QR Code como pagamento confirmado.
+        return redirect("/minha-assinatura")
+    except ValueError as exc:
+        conn.rollback()
+        return str(exc), 400
+    except Exception:
+        conn.rollback()
+        app.logger.exception("Falha ao preparar Pix da cobranca %s", cobranca_id)
+        return "Nao foi possivel preparar o Pix. Tente novamente.", 503
     finally:
         conn.close()
 
