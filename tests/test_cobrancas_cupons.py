@@ -4,7 +4,8 @@ import unittest
 from planos import criar_tabela_planos
 from cobrancas import (
     criar_tabela_cobrancas, criar_tabela_cupons,
-    registrar_cobranca_com_cupom, preparar_descontos_cobrancas
+    registrar_cobranca_com_cupom, preparar_descontos_cobrancas,
+    cancelar_cobranca_pendente, expirar_cobranca_pendente
 )
 
 
@@ -57,6 +58,42 @@ class TestarCobrancaComCupom(unittest.TestCase):
             registrar_cobranca_com_cupom(self.conn, 1, 1, "pedido-3", "PROMO10", 7, 6)
         total = self.conn.execute("SELECT COUNT(*) FROM cobrancas_assinatura").fetchone()[0]
         self.assertEqual(total, 0)
+
+    def test_cancelamento_libera_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-cancelado", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        registro = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()
+        reserva = self.conn.execute(
+            "SELECT cobranca_id FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()
+        self.assertEqual(registro[0], "cancelada")
+        self.assertIsNone(reserva[0])
+
+    def test_expiracao_libera_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-expirado", "PROMO10", 7, 5
+        )
+        expirar_cobranca_pendente(self.conn, cobranca_id)
+        registro = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()
+        self.assertEqual(registro[0], "expirada")
+        reserva = self.conn.execute(
+            "SELECT cobranca_id FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()
+        self.assertIsNone(reserva[0])
+
+    def test_nao_cancela_duas_vezes(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-unico", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        with self.assertRaises(ValueError):
+            cancelar_cobranca_pendente(self.conn, cobranca_id)
 
     def test_migracao_preserva_cobranca_antiga(self):
         from cobrancas import registrar_cobranca
