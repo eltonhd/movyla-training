@@ -4247,6 +4247,81 @@ def editar_exercicio(exercicio_id):
     )
 
 # ============================================================
+# ADMINISTRAR PLANOS (sem realizar cobranças)
+# ============================================================
+
+@app.route("/admin/planos", methods=["GET", "POST"])
+@login_obrigatorio
+def administrar_planos():
+    if not usuario_e_owner():
+        return redirect("/")
+
+    import secrets
+    from decimal import ROUND_HALF_UP
+    from planos import criar_tabela_planos
+
+    token = session.get("planos_csrf")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["planos_csrf"] = token
+
+    erro = None
+    sucesso = request.args.get("salvo") == "1"
+    conn = conectar()
+    try:
+        criar_tabela_planos(conn)
+        conn.commit()
+        if request.method == "POST":
+            if not secrets.compare_digest(
+                request.form.get("csrf_token", ""), token
+            ):
+                return "Requisição inválida.", 400
+
+            try:
+                plano_id = int(request.form.get("plano_id", ""))
+                nome = request.form.get("nome", "").strip()
+                meses = int(request.form.get("periodo_meses", ""))
+                valor_texto = request.form.get("preco", "").strip().replace(",", ".")
+                valor = Decimal(valor_texto)
+                ativo = int(request.form.get("ativo", "0"))
+
+                if not nome or len(nome) > 80:
+                    raise ValueError("Informe um nome com até 80 caracteres.")
+                if meses < 1 or meses > 120:
+                    raise ValueError("O período deve ter entre 1 e 120 meses.")
+                if not valor.is_finite() or valor < 0 or valor > 100000:
+                    raise ValueError("Informe um preço válido.")
+                if valor != valor.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP):
+                    raise ValueError("Use no máximo duas casas decimais.")
+                if ativo not in (0, 1):
+                    raise ValueError("Status inválido.")
+
+                cursor = conn.execute("""
+                    UPDATE planos_assinatura
+                    SET nome = ?, periodo_meses = ?, preco_centavos = ?, ativo = ?
+                    WHERE id = ?
+                """, (nome, meses, int(valor * 100), ativo, plano_id))
+                if cursor.rowcount != 1:
+                    raise ValueError("Plano não encontrado.")
+                conn.commit()
+                return redirect("/admin/planos?salvo=1")
+            except (ValueError, InvalidOperation, OverflowError) as exc:
+                erro = str(exc)
+
+        planos = conn.execute("""
+            SELECT id, codigo, nome, periodo_meses, preco_centavos, ativo
+            FROM planos_assinatura
+            ORDER BY periodo_meses, id
+        """).fetchall()
+        return render_template(
+            "admin_planos.html", planos=planos,
+            csrf_token=token, erro=erro, sucesso=sucesso
+        )
+    finally:
+        conn.close()
+
+
+# ============================================================
 # CALCULAR VENCIMENTO DA ASSINATURA
 # ============================================================
 
