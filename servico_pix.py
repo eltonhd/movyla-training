@@ -10,7 +10,8 @@ from orders_mercado_pago import vincular_order
 
 def gerar_pix_cobranca(conn, cobranca_id, personal_id, email_pagador):
     """Usa somente o valor armazenado e verifica o titular da cobrança."""
-    if type(cobranca_id) is not int or type(personal_id) is not int:
+    if (type(cobranca_id) is not int or cobranca_id <= 0
+            or type(personal_id) is not int or personal_id <= 0):
         raise ValueError("Identificadores inválidos.")
     cobranca = conn.execute("""
         SELECT c.id, c.referencia, c.valor_centavos, c.status
@@ -32,5 +33,8 @@ def gerar_pix_cobranca(conn, cobranca_id, personal_id, email_pagador):
         cobranca["id"], cobranca["referencia"],
         cobranca["valor_centavos"], email_pagador
     )
+    # O chamador deve confirmar a transação SQLite após o vínculo.
+    # Se a chamada bancária funcionar e a gravação falhar, a mesma chave
+    # de idempotência permite recuperar a Order sem gerar outra.
     vincular_order(conn, cobranca_id, retorno["id"], retorno.get("status") or "criada")
     return retorno
