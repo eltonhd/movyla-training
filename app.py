@@ -4354,8 +4354,8 @@ def administrar_cupons():
                     cupom_id = int(request.form.get("cupom_id", ""))
                     cursor = conn.execute("""
                         UPDATE cupons_assinatura SET ativo = 0
-                        WHERE id = ? AND usado_em IS NULL
-                    """, (cupom_id,))
+                        WHERE id = ? AND usado_em IS NULL AND administrador_id = ?
+                    """, (cupom_id, session["usuario_id"]))
                     if cursor.rowcount != 1:
                         raise ValueError("Cupom indisponível.")
                 elif acao == "criar":
@@ -4390,9 +4390,9 @@ def administrar_cupons():
                             raise ValueError("Plano inválido.")
                     conn.execute("""
                         INSERT INTO cupons_assinatura
-                            (codigo, desconto_centavos, personal_id, plano_id)
-                        VALUES (?, ?, ?, ?)
-                    """, (codigo, int(valor * 100), personal_id, plano_id))
+                            (codigo, desconto_centavos, personal_id, plano_id, administrador_id)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (codigo, int(valor * 100), personal_id, plano_id, session["usuario_id"]))
                 else:
                     raise ValueError("Ação inválida.")
                 conn.commit()
@@ -4408,8 +4408,9 @@ def administrar_cupons():
             FROM cupons_assinatura c
             LEFT JOIN usuarios u ON u.id = c.personal_id
             LEFT JOIN planos_assinatura p ON p.id = c.plano_id
+            WHERE c.administrador_id = ?
             ORDER BY c.id DESC
-        """).fetchall()
+        """, (session["usuario_id"],)).fetchall()
         personais = conn.execute("""
             SELECT id, nome FROM usuarios
             WHERE tipo = 'personal' AND responsavel_id = ?
