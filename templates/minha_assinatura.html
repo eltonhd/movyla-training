@@ -63,7 +63,7 @@
 <h2>Minhas cobranças</h2>
 <div class="tabela">
 <table>
-<thead><tr><th>Referência</th><th>Valor</th><th>Desconto</th><th>Status</th><th>Mercado Pago</th><th>Data</th></tr></thead>
+<thead><tr><th>Referência</th><th>Valor</th><th>Desconto</th><th>Status</th><th>Mercado Pago</th><th>Data</th><th>Pix teste</th></tr></thead>
 <tbody>
 {% for cobranca in cobrancas %}
 <tr>
@@ -80,9 +80,21 @@
 {% endif %}
 </td>
 <td>{{ cobranca['criada_em'][:10] }}</td>
+<td>
+{% if pix_teste_habilitado and cobranca['status'] == 'pendente' %}
+<form method="post" action="{{ url_for('gerar_pix_personal', cobranca_id=cobranca['id']) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_financeiro }}">
+<label for="email-pix-{{ cobranca['id'] }}" class="muted">E-mail do pagador</label>
+<input id="email-pix-{{ cobranca['id'] }}" type="email" name="email_pagador" required maxlength="254" autocomplete="email">
+<button type="submit">Preparar Pix teste</button>
+</form>
+{% else %}
+<span class="muted">Indisponível</span>
+{% endif %}
+</td>
 </tr>
 {% else %}
-<tr><td colspan="6" class="muted">Nenhuma cobrança registrada.</td></tr>
+<tr><td colspan="7" class="muted">Nenhuma cobrança registrada.</td></tr>
 {% endfor %}
 </tbody>
 </table>
