@@ -175,6 +175,48 @@ def expirar_cobranca_pendente(conn, cobranca_id):
         raise
 
 
+def registrar_confirmacao_verificada(conn, cobranca_id, identificador_externo):
+    """Registra confirmação já validada pelo provedor; não autentica webhooks."""
+    if not isinstance(identificador_externo, str) or not identificador_externo.strip():
+        raise ValueError("Identificador externo obrigatório.")
+    identificador_externo = identificador_externo.strip()
+    if len(identificador_externo) > 180:
+        raise ValueError("Identificador externo muito longo.")
+    conn.execute("SAVEPOINT movyla_confirmacao")
+    try:
+        registro = conn.execute("""
+            SELECT status, identificador_externo FROM cobrancas_assinatura
+            WHERE id = ?
+        """, (cobranca_id,)).fetchone()
+        if registro is None:
+            raise ValueError("Cobrança não encontrada.")
+        if registro[0] == "paga":
+            if registro[1] == identificador_externo:
+                conn.execute("RELEASE SAVEPOINT movyla_confirmacao")
+                return False
+            raise ValueError("Cobrança já confirmada com outra identificação.")
+        if registro[0] != "pendente":
+            raise ValueError("Cobrança não está pendente.")
+        instante = datetime.now(timezone.utc).isoformat()
+        cursor = conn.execute("""
+            UPDATE cobrancas_assinatura
+            SET status = 'paga', identificador_externo = ?, paga_em = ?
+            WHERE id = ? AND status = 'pendente'
+        """, (identificador_externo, instante, cobranca_id))
+        if cursor.rowcount != 1:
+            raise ValueError("Cobrança já processada.")
+        conn.execute("""
+            UPDATE cupons_assinatura SET usado_em = ?
+            WHERE cobranca_id = ? AND usado_em IS NULL
+        """, (instante, cobranca_id))
+        conn.execute("RELEASE SAVEPOINT movyla_confirmacao")
+        return True
+    except Exception:
+        conn.execute("ROLLBACK TO SAVEPOINT movyla_confirmacao")
+        conn.execute("RELEASE SAVEPOINT movyla_confirmacao")
+        raise
+
+
 def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos, administrador_id=None):
     """Calcula o desconto elegível sem consumir o cupom."""
     if not isinstance(codigo, str) or not codigo.strip():
