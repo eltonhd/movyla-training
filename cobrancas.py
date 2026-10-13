@@ -72,6 +72,65 @@ def criar_tabela_cupons(conn):
         conn.execute("ALTER TABLE cupons_assinatura ADD COLUMN administrador_id INTEGER")
 
 
+def preparar_descontos_cobrancas(conn):
+    """Migração aditiva: preserva o valor original e o total após desconto."""
+    colunas = {item[1] for item in conn.execute(
+        "PRAGMA table_info(cobrancas_assinatura)"
+    )}
+    if "valor_original_centavos" not in colunas:
+        conn.execute(
+            "ALTER TABLE cobrancas_assinatura ADD COLUMN valor_original_centavos INTEGER"
+        )
+    if "desconto_centavos" not in colunas:
+        conn.execute(
+            "ALTER TABLE cobrancas_assinatura ADD COLUMN desconto_centavos INTEGER NOT NULL DEFAULT 0"
+        )
+    conn.execute("""
+        UPDATE cobrancas_assinatura
+        SET valor_original_centavos = valor_centavos
+        WHERE valor_original_centavos IS NULL
+    """)
+
+
+def registrar_cobranca_com_cupom(conn, assinatura_id, plano_id, referencia,
+                                codigo, personal_id, administrador_id):
+    """Reserva cupom na cobrança pendente; não confirma nem liquida pagamento."""
+    criar_tabela_cupons(conn)
+    preparar_descontos_cobrancas(conn)
+    conn.execute("SAVEPOINT movyla_reserva_cupom")
+    try:
+        cobranca_id = registrar_cobranca(
+            conn, assinatura_id, plano_id, referencia
+        )
+        original = conn.execute("""
+            SELECT valor_centavos FROM cobrancas_assinatura WHERE id = ?
+        """, (cobranca_id,)).fetchone()[0]
+        desconto = consultar_desconto(
+            conn, codigo, personal_id, plano_id, original, administrador_id
+        )
+        if desconto >= original:
+            raise ValueError("Cupom de desconto integral exige fluxo gratuito separado.")
+        cursor = conn.execute("""
+            UPDATE cupons_assinatura SET cobranca_id = ?
+            WHERE codigo = ? AND cobranca_id IS NULL
+              AND usado_em IS NULL AND ativo = 1 AND administrador_id = ?
+        """, (cobranca_id, codigo.strip().upper(), administrador_id))
+        if cursor.rowcount != 1:
+            raise ValueError("Cupom já reservado ou indisponível.")
+        conn.execute("""
+            UPDATE cobrancas_assinatura
+            SET valor_original_centavos = ?, desconto_centavos = ?,
+                valor_centavos = ?
+            WHERE id = ?
+        """, (original, desconto, original - desconto, cobranca_id))
+        conn.execute("RELEASE SAVEPOINT movyla_reserva_cupom")
+        return cobranca_id
+    except Exception:
+        conn.execute("ROLLBACK TO SAVEPOINT movyla_reserva_cupom")
+        conn.execute("RELEASE SAVEPOINT movyla_reserva_cupom")
+        raise
+
+
 def consultar_desconto(conn, codigo, personal_id, plano_id, preco_centavos, administrador_id=None):
     """Calcula o desconto elegível sem consumir o cupom."""
     if not isinstance(codigo, str) or not codigo.strip():
