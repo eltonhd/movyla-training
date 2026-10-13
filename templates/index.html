@@ -675,6 +675,12 @@ mask-image: linear-gradient(to right, transparent 42%, rgba(0,0,0,.25) 52%, rgba
             {% if session["tipo"] == "master" %}
                 ADMINISTRADOR
             {% elif session["tipo"] == "personal" %}
+<a href="{{ url_for('minha_assinatura') }}" class="feature-card" style="margin-bottom:20px;display:block;text-decoration:none;">
+<div class="feature-icon">💳</div>
+<h3>Minha assinatura MOVYLA</h3>
+<p>Consulte seu plano, vencimento e histórico financeiro.</p>
+<div class="feature-arrow">↗</div>
+</a>
                 PERSONAL TRAINER
             {% else %}
                 ALUNO
