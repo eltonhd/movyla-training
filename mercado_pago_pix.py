@@ -74,7 +74,12 @@ def criar_pix(cobranca_id, referencia, valor_centavos, email_pagador):
         "/v1/orders", metodo="POST", dados=dados,
         chave_idempotencia="movyla-pix-" + str(cobranca_id)
     )
-    pagamentos = retorno.get("transactions", {}).get("payments", [])
+    return extrair_dados_pix_order(retorno)
+
+
+def extrair_dados_pix_order(retorno):
+    """Normaliza instruções Pix sem interpretar o status como pagamento aprovado."""
+    pagamentos = (retorno.get("transactions") or {}).get("payments") or []
     pagamento = pagamentos[0] if pagamentos else {}
     metodo = pagamento.get("payment_method") or {}
     dados_pix = metodo.get("transaction_data") or {}
@@ -90,6 +95,7 @@ def criar_pix(cobranca_id, referencia, valor_centavos, email_pagador):
 def consultar_pagamento(order_id):
     """Consulta a order na API autenticada; webhook isolado não aprova nada."""
     identificador = str(order_id)
-    if not identificador.startswith("ORD") or not identificador.isalnum() or len(identificador) > 64:
+    if (not identificador.startswith("ORD") or len(identificador) > 64
+            or not all(c.isalnum() or c == "-" for c in identificador)):
         raise ValueError("ID de order inválido.")
     return _requisitar("/v1/orders/" + identificador)
