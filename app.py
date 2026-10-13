@@ -4789,7 +4789,7 @@ def obter_resumo_financeiro_personal(conn, personal_id):
     cobrancas = []
     if assinatura:
         cobrancas = conn.execute("""
-            SELECT c.referencia, c.valor_centavos, c.status, c.criada_em, c.paga_em,
+            SELECT c.id, c.referencia, c.valor_centavos, c.status, c.criada_em, c.paga_em,
                    c.periodo_meses, COALESCE(c.desconto_centavos, 0) AS desconto_centavos,
                    o.order_id AS mercado_pago_order_id, o.status AS mercado_pago_status
             FROM cobrancas_assinatura c
@@ -4893,7 +4893,8 @@ def minha_assinatura():
         return render_template(
             "minha_assinatura.html", assinatura=assinatura,
             planos=planos_disponiveis, cobrancas=cobrancas,
-            csrf_financeiro=session["csrf_financeiro"]
+            csrf_financeiro=session["csrf_financeiro"],
+            pix_teste_habilitado=os.environ.get("MOVYLA_PIX_TESTE_HABILITADO") == "1"
         )
     finally:
         conn.close()
