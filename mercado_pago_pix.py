@@ -77,12 +77,13 @@ def criar_pix(cobranca_id, referencia, valor_centavos, email_pagador):
     pagamentos = retorno.get("transactions", {}).get("payments", [])
     pagamento = pagamentos[0] if pagamentos else {}
     metodo = pagamento.get("payment_method") or {}
+    dados_pix = metodo.get("transaction_data") or {}
     return {
         "id": str(retorno["id"]),
         "status": retorno.get("status"),
-        "qr_code": metodo.get("qr_code"),
-        "qr_code_base64": metodo.get("qr_code_base64"),
-        "ticket_url": metodo.get("ticket_url"),
+        "qr_code": metodo.get("qr_code") or dados_pix.get("qr_code"),
+        "qr_code_base64": metodo.get("qr_code_base64") or dados_pix.get("qr_code_base64"),
+        "ticket_url": metodo.get("ticket_url") or dados_pix.get("ticket_url"),
     }
 
 
