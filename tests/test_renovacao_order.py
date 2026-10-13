@@ -58,11 +58,11 @@ class TestarRenovacaoOrder(unittest.TestCase):
     def test_duplicata_nao_renova_duas_vezes(self):
         with patch("conciliacao_orders.consultar_pagamento", return_value=self.order):
             primeiro = reconciliar_order_autenticada(
-                self.conn, 7, hoje=date(2026, 10, 13)
+                self.conn, 7, hoje='2026-10-13'
             )
             self.conn.commit()
             segundo = reconciliar_order_autenticada(
-                self.conn, 7, hoje=date(2026, 10, 13)
+                self.conn, 7, hoje='2026-10-13'
             )
             self.conn.commit()
         self.assertTrue(primeiro[1])
