@@ -4809,17 +4809,22 @@ def solicitar_cobranca_personal():
         return "Plano invalido", 400
     conn = conectar()
     try:
+        # Serializa a verificacao e a criacao contra requisicoes simultaneas.
+        conn.commit()
+        conn.execute("BEGIN IMMEDIATE")
         assinatura = conn.execute("""
             SELECT id FROM assinaturas_personais
-            WHERE personal_id = ? AND tipo_assinatura = 'paga' AND isento = 0
+            WHERE personal_id = ? AND tipo_assinatura = 'paga' AND COALESCE(isento, 0) = 0
         """, (session["usuario_id"],)).fetchone()
         if assinatura is None:
+            conn.rollback()
             return "Assinatura indisponivel", 400
         pendente = conn.execute("""
             SELECT id FROM cobrancas_assinatura
             WHERE assinatura_id = ? AND status = 'pendente'
         """, (assinatura["id"],)).fetchone()
         if pendente:
+            conn.rollback()
             return redirect("/minha-assinatura")
         registrar_cobranca(
             conn, assinatura["id"], plano_id, "movyla-" + secrets.token_hex(16)
