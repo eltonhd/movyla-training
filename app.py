@@ -680,12 +680,14 @@ def personal_novo():
             ""
         ).strip()
 
+        email = request.form.get("email", "").strip().lower()
+
         senha = request.form.get(
             "senha",
             ""
         ).strip()
 
-        if not nome or not usuario or not senha:
+        if not nome or not usuario or not senha or not email or "@" not in email or len(email) > 254:
 
             return render_template(
                 "personal_novo.html",
@@ -713,6 +715,17 @@ def personal_novo():
                 erro="Este usuário já está cadastrado."
             )
 
+        cursor.execute(
+            "SELECT id FROM usuarios WHERE LOWER(email) = ? LIMIT 1",
+            (email,)
+        )
+        if cursor.fetchone():
+            conn.close()
+            return render_template(
+                "personal_novo.html",
+                erro="Este e-mail ja esta cadastrado."
+            )
+
         senha_hash = generate_password_hash(
             senha
         )
@@ -726,15 +739,17 @@ def personal_novo():
                 senha,
                 tipo,
                 ativo,
-                responsavel_id
+                responsavel_id,
+                email
             )
-            VALUES (?, ?, ?, 'personal', 1, ?)
+            VALUES (?, ?, ?, 'personal', 1, ?, ?)
             """,
             (
                 nome,
                 usuario,
                 senha_hash,
-                session["usuario_id"]
+                session["usuario_id"],
+                email
             )
         )
 
