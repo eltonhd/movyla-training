@@ -15,6 +15,9 @@ from webhook_mercado_pago import validar_assinatura_webhook
 from conciliacao_orders import conferir_order_autenticada, reconciliar_order_autenticada
 import os
 import secrets
+import hashlib
+from datetime import datetime, timezone
+from email_brevo import enviar_email_recuperacao
 
 
 # ============================================================
@@ -179,6 +182,142 @@ def login():
     return render_template(
         "login.html"
     )
+
+
+
+# ============================================================
+# RECUPERACAO DE SENHA - SOMENTE HOMOLOGACAO
+# ============================================================
+
+def criar_token_recuperacao(usuario_id):
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    expira_em = (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()
+    conn = conectar()
+    try:
+        conn.execute(
+            "INSERT INTO recuperacao_senha (usuario_id, token_hash, expira_em) VALUES (?, ?, ?)",
+            (usuario_id, token_hash, expira_em)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return token
+
+
+def validar_token_recuperacao(token):
+    if not token:
+        return None
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    conn = conectar()
+    try:
+        registro = conn.execute("""
+            SELECT r.usuario_id, r.expira_em, r.utilizado_em
+            FROM recuperacao_senha r
+            JOIN usuarios u ON u.id = r.usuario_id
+            WHERE r.token_hash = ? AND u.ativo = 1
+        """, (token_hash,)).fetchone()
+    finally:
+        conn.close()
+    if not registro or registro["utilizado_em"]:
+        return None
+    try:
+        if datetime.fromisoformat(registro["expira_em"]) <= datetime.now(timezone.utc):
+            return None
+    except (TypeError, ValueError):
+        return None
+    return registro["usuario_id"]
+
+
+def salvar_nova_senha(token, nova_senha):
+    if not token or not 8 <= len(nova_senha) <= 128:
+        return False
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    conn = conectar()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        registro = conn.execute("""
+            SELECT r.usuario_id, r.expira_em, r.utilizado_em
+            FROM recuperacao_senha r
+            JOIN usuarios u ON u.id = r.usuario_id
+            WHERE r.token_hash = ? AND u.ativo = 1
+        """, (token_hash,)).fetchone()
+        if not registro or registro["utilizado_em"]:
+            conn.rollback()
+            return False
+        try:
+            valido = datetime.fromisoformat(registro["expira_em"]) > datetime.now(timezone.utc)
+        except (TypeError, ValueError):
+            valido = False
+        if not valido:
+            conn.rollback()
+            return False
+        agora = datetime.now(timezone.utc).isoformat()
+        conn.execute(
+            "UPDATE usuarios SET senha = ? WHERE id = ?",
+            (generate_password_hash(nova_senha), registro["usuario_id"])
+        )
+        conn.execute(
+            "UPDATE recuperacao_senha SET utilizado_em = ? WHERE usuario_id = ? AND utilizado_em IS NULL",
+            (agora, registro["usuario_id"])
+        )
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+@app.route("/esqueci-senha", methods=["GET", "POST"])
+def esqueci_senha():
+    if os.environ.get("MOVYLA_AMBIENTE") != "homologacao":
+        return "Nao disponivel", 404
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        mensagem = "Se o e-mail estiver cadastrado, voce recebera instrucoes para recuperar sua senha."
+        if email and len(email) <= 254:
+            conn = conectar()
+            try:
+                usuario = conn.execute("""
+                    SELECT id FROM usuarios WHERE LOWER(email) = ? AND ativo = 1 LIMIT 1
+                """, (email,)).fetchone()
+            finally:
+                conn.close()
+            if usuario:
+                try:
+                    token = criar_token_recuperacao(usuario["id"])
+                    base_url = os.environ.get(
+                        "MOVYLA_BASE_URL", "https://movyla-homologacao.onrender.com"
+                    ).rstrip("/")
+                    if not base_url.startswith("https://"):
+                        raise ValueError("URL base de recuperacao deve usar HTTPS")
+                    link = base_url + "/redefinir-senha/" + token
+                    enviar_email_recuperacao(email, link)
+                except Exception:
+                    app.logger.exception("Falha no envio de recuperacao de senha")
+        return render_template("esqueci_senha.html", mensagem=mensagem)
+    return render_template("esqueci_senha.html")
+
+
+@app.route("/redefinir-senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+    if os.environ.get("MOVYLA_AMBIENTE") != "homologacao":
+        return "Nao disponivel", 404
+    if not validar_token_recuperacao(token):
+        return render_template("redefinir_senha.html", token_valido=False)
+    if request.method == "POST":
+        senha = request.form.get("senha", "")
+        confirmacao = request.form.get("confirmar_senha", "")
+        if not 8 <= len(senha) <= 128:
+            return render_template("redefinir_senha.html", erro="A senha deve ter entre 8 e 128 caracteres.")
+        if senha != confirmacao:
+            return render_template("redefinir_senha.html", erro="As senhas nao conferem.")
+        if salvar_nova_senha(token, senha):
+            return redirect("/login?senha_redefinida=1")
+        return render_template("redefinir_senha.html", token_valido=False)
+    return render_template("redefinir_senha.html", token_valido=True)
 
 
 # ============================================================
