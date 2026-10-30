@@ -23,3 +23,24 @@ def inicializar_banco_homologacao():
 
     with sqlite3.connect(caminho_banco) as conn:
         conn.executescript(sql)
+
+        colunas = [coluna[1] for coluna in conn.execute("PRAGMA table_info(usuarios)")]
+        if "email" not in colunas:
+            conn.execute("ALTER TABLE usuarios ADD COLUMN email TEXT")
+
+        conn.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_usuarios_email_unico
+            ON usuarios(LOWER(email)) WHERE email IS NOT NULL
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS recuperacao_senha (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                expira_em TEXT NOT NULL,
+                utilizado_em TEXT,
+                criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+            )
+        """)
