@@ -52,7 +52,7 @@ CREATE TABLE usuarios (
             senha TEXT NOT NULL,
             tipo TEXT NOT NULL DEFAULT 'aluno',
             ativo INTEGER NOT NULL DEFAULT 1
-        , foto TEXT, responsavel_id INTEGER);
+        , foto TEXT, responsavel_id INTEGER, email TEXT);
 
 CREATE TABLE treino_alunos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
