@@ -285,6 +285,8 @@ def esqueci_senha():
                 """, (email,)).fetchone()
             finally:
                 conn.close()
+            if not usuario:
+                app.logger.warning("Recuperacao homologacao: nenhum usuario ativo corresponde ao email informado")
             if usuario:
                 try:
                     token = criar_token_recuperacao(usuario["id"])
@@ -294,7 +296,8 @@ def esqueci_senha():
                     if not base_url.startswith("https://"):
                         raise ValueError("URL base de recuperacao deve usar HTTPS")
                     link = base_url + "/redefinir-senha/" + token
-                    enviar_email_recuperacao(email, link)
+                    aceito = enviar_email_recuperacao(email, link)
+                    app.logger.info("Recuperacao homologacao: resposta da API Brevo recebida; aceito=%s", aceito)
                 except Exception:
                     app.logger.exception("Falha no envio de recuperacao de senha")
         return render_template("esqueci_senha.html", mensagem=mensagem)
