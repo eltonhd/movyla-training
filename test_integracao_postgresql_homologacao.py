@@ -57,5 +57,64 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 self.assertEqual(registro["nome"], "Personal Teste")
 
 
+    def test_renovacao_paga_idempotente(self):
+        from renovacoes_postgresql_homologacao import aplicar_renovacao_postgresql
+        url = os.environ["TEST_POSTGRES_URL"]
+        parsed = urlparse(url)
+        self.assertEqual((parsed.hostname, parsed.path, parsed.username),
+                         ("localhost", "/movyla_ci", "movyla_ci"))
+        with conectar_postgresql(url) as conn:
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo) "
+                    "VALUES (%s, %s, %s, %s) RETURNING id",
+                    ("Personal Renovacao", "renovacao_pg_ci", "hash_de_teste", "personal"),
+                )
+                personal_id = cur.fetchone()[0]
+                cur.execute(
+                    "INSERT INTO assinaturas_personais "
+                    "(personal_id, plano, proximo_vencimento, tipo_assinatura) "
+                    "VALUES (%s, %s, %s, %s) RETURNING id",
+                    (personal_id, "mensal", "2026-11-30", "paga"),
+                )
+                assinatura_id = cur.fetchone()[0]
+                cur.execute(
+                    "SELECT id FROM planos_assinatura WHERE codigo = %s",
+                    ("mensal",),
+                )
+                plano_id = cur.fetchone()[0]
+                cur.execute(
+                    "INSERT INTO cobrancas_assinatura "
+                    "(assinatura_id, plano_id, referencia, valor_centavos, "
+                    "periodo_meses, status, criada_em) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                    (assinatura_id, plano_id, "renovacao-ci", 5000, 1,
+                     "paga", "2026-11-10"),
+                )
+                cobranca_id = cur.fetchone()[0]
+            conn.commit()
+        with conectar_postgresql(url) as conn:
+            primeiro = aplicar_renovacao_postgresql(
+                conn, cobranca_id, hoje="2026-11-10")
+            segundo = aplicar_renovacao_postgresql(
+                conn, cobranca_id, hoje="2026-11-10")
+            self.assertEqual(primeiro, ("2026-12-30", True))
+            self.assertEqual(segundo, ("2026-12-30", False))
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT proximo_vencimento FROM assinaturas_personais WHERE id = %s",
+                    (assinatura_id,),
+                )
+                self.assertEqual(cur.fetchone()[0], "2026-12-30")
+                cur.execute(
+                    "SELECT COUNT(*) FROM renovacoes_assinatura WHERE cobranca_id = %s",
+                    (cobranca_id,),
+                )
+                self.assertEqual(cur.fetchone()[0], 1)
+
+
 if __name__ == "__main__":
     unittest.main()
