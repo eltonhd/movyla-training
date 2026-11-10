@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS renovacoes_assinatura (
  assinatura_id BIGINT NOT NULL REFERENCES assinaturas_personais(id),
  vencimento_anterior TEXT,
  vencimento_novo TEXT NOT NULL,
- registrada_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::TEXT
+ registrada_em TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::TEXT)
 );
 COMMIT;
