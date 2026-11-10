@@ -28,10 +28,10 @@ class LinhaMovylaTests(unittest.TestCase):
 
 class ConversaoSQLTests(unittest.TestCase):
     def test_marcadores_sem_alterar_literais_e_comentarios(self):
-        sql = "SELECT '?' AS texto, nome FROM usuarios WHERE id = ? -- ?\\n AND tipo = ?"
+        sql = "SELECT '?' AS texto, nome FROM usuarios WHERE id = ? -- ?\n AND tipo = ?"
         self.assertEqual(
             converter_parametros_sqlite(sql),
-            "SELECT '?' AS texto, nome FROM usuarios WHERE id = %s -- ?\\n AND tipo = %s",
+            "SELECT '?' AS texto, nome FROM usuarios WHERE id = %s -- ?\n AND tipo = %s",
         )
 
     def test_identificadores_e_comentario_bloco(self):
