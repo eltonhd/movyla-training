@@ -14,6 +14,22 @@ permissions:
 jobs:
   testes:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: movyla_ci
+          POSTGRES_PASSWORD: senha_apenas_ci
+          POSTGRES_DB: movyla_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U movyla_ci -d movyla_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgresql://movyla_ci:senha_apenas_ci@localhost:5432/movyla_ci
     steps:
       - name: Baixar código
         uses: actions/checkout@v4
@@ -23,7 +39,11 @@ jobs:
           python-version: '3.12'
       - name: Instalar dependências
         run: python -m pip install -r requirements.txt
+      - name: Instalar driver PostgreSQL de testes
+        run: python -m pip install "psycopg[binary]>=3.2,<4"
       - name: Verificar sintaxe Python
         run: python -m compileall -q app.py database.py planos.py cobrancas.py renovacoes.py pagamentos.py liquidacao_pix.py mercado_pago_pix.py mercado_pago_orders.py tests
       - name: Executar testes de vencimentos, planos e cobranças
         run: python -m unittest discover -s tests -v
+      - name: Validar migracoes PostgreSQL e renovacao em banco descartavel
+        run: python -m unittest -v test_postgresql_homologacao test_esquema_postgresql_homologacao test_integracao_postgresql_homologacao
