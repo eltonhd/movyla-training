@@ -1,0 +1,32 @@
+name: Validar PostgreSQL homologacao (offline)
+
+on:
+  push:
+    branches:
+      - desenvolvimento-seguro-20261013
+    paths:
+      - 'postgresql_homologacao.py'
+      - 'migrations/postgresql/**'
+      - 'test_postgresql_homologacao.py'
+      - 'test_esquema_postgresql_homologacao.py'
+      - '.github/workflows/validar-postgresql-homologacao.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout homologacao
+        uses: actions/checkout@v4
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validar sintaxe Python
+        run: python -m py_compile postgresql_homologacao.py test_postgresql_homologacao.py test_esquema_postgresql_homologacao.py
+      - name: Executar testes offline sem banco ou credenciais
+        run: python -m unittest -v test_postgresql_homologacao test_esquema_postgresql_homologacao
