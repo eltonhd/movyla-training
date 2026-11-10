@@ -61,3 +61,63 @@ def verificar_conexao(url=None):
         with conn.cursor() as cursor:
             cursor.execute("SELECT 1 AS teste")
             return cursor.fetchone()["teste"] == 1
+
+
+def converter_parametros_sqlite(sql):
+    """Convert SQLite ? bind markers to psycopg %s, respecting SQL literals.
+
+    This is a migration helper, NOT automatically enabled in app.py.
+    Reject SQLite-only SQL explicitly rather than silently altering semantics.
+    """
+    import re
+
+    if re.search(r"(?i)\\b(?:PRAGMA|AUTOINCREMENT)\\b|\\bINSERT\\s+OR\\s+IGNORE\\b|\\bBEGIN\\s+IMMEDIATE\\b", sql):
+        raise ValueError("Comando SQLite exige migracao explicita para PostgreSQL.")
+
+    result = []
+    state = "normal"
+    i = 0
+    while i < len(sql):
+        ch = sql[i]
+        nxt = sql[i + 1] if i + 1 < len(sql) else ""
+        if state == "normal":
+            if ch == "'":
+                state = "single"
+            elif ch == '"':
+                state = "double"
+            elif ch == "-" and nxt == "-":
+                state = "line_comment"
+            elif ch == "/" and nxt == "*":
+                state = "block_comment"
+            elif ch == "?":
+                result.append("%s")
+                i += 1
+                continue
+        elif state == "single":
+            if ch == "'" and nxt == "'":
+                result.extend((ch, nxt))
+                i += 2
+                continue
+            if ch == "'":
+                state = "normal"
+        elif state == "double":
+            if ch == '"' and nxt == '"':
+                result.extend((ch, nxt))
+                i += 2
+                continue
+            if ch == '"':
+                state = "normal"
+        elif state == "line_comment":
+            if ch == "\\n":
+                state = "normal"
+        elif state == "block_comment":
+            if ch == "*" and nxt == "/":
+                result.extend((ch, nxt))
+                i += 2
+                state = "normal"
+                continue
+        result.append(ch)
+        i += 1
+    if state in ("single", "double", "block_comment"):
+        raise ValueError("SQL incompleto: literal ou comentario nao terminado.")
+    return "".join(result)
