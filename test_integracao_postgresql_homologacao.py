@@ -40,6 +40,13 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 self.assertIsInstance(user_id, int)
             conn.commit()
 
+        # Re-run migrations to ensure deployments can safely restart.
+        with conectar_postgresql(url) as conn:
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            conn.commit()
+
         with conectar_postgresql(url) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT id, nome FROM usuarios WHERE usuario = %s",
