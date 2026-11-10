@@ -71,7 +71,7 @@ def converter_parametros_sqlite(sql):
     """
     import re
 
-    if re.search(r"(?i)\\b(?:PRAGMA|AUTOINCREMENT)\\b|\\bINSERT\\s+OR\\s+IGNORE\\b|\\bBEGIN\\s+IMMEDIATE\\b", sql):
+    if re.search(r"(?i)\b(?:PRAGMA|AUTOINCREMENT)\b|\bINSERT\s+OR\s+IGNORE\b|\bBEGIN\s+IMMEDIATE\b", sql):
         raise ValueError("Comando SQLite exige migracao explicita para PostgreSQL.")
 
     result = []
@@ -108,7 +108,7 @@ def converter_parametros_sqlite(sql):
             if ch == '"':
                 state = "normal"
         elif state == "line_comment":
-            if ch == "\\n":
+            if ch == "\n":
                 state = "normal"
         elif state == "block_comment":
             if ch == "*" and nxt == "/":
