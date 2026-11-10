@@ -6,6 +6,7 @@ tables and data and must NEVER be pointed at an existing database.
 import os
 import unittest
 from pathlib import Path
+from urllib.parse import urlparse
 
 from postgresql_homologacao import conectar_postgresql
 
@@ -17,7 +18,14 @@ MIGRATIONS = ROOT / "migrations" / "postgresql"
 class PostgreSQLIntegrationTests(unittest.TestCase):
     def test_schema_and_persistence_across_connections(self):
         url = os.environ["TEST_POSTGRES_URL"]
-        # CI provisions a fresh, empty database. Never use DATABASE_URL.
+        # Refuse Supabase, production, and any remote host, even if env is wrong.
+        parsed = urlparse(url)
+        self.assertIn(parsed.hostname, ("localhost", "127.0.0.1"),
+                      "Integration test requires a LOCAL disposable database")
+        self.assertEqual(parsed.path, "/movyla_ci",
+                         "Integration test requires database movyla_ci")
+        self.assertEqual(parsed.username, "movyla_ci",
+                         "Integration test requires dedicated CI user")
         with conectar_postgresql(url) as conn:
             for path in sorted(MIGRATIONS.glob("*.sql")):
                 with conn.cursor() as cur:
