@@ -27,9 +27,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(parsed.username, "movyla_ci",
                          "Integration test requires dedicated CI user")
         with conectar_postgresql(url) as conn:
+            # Migration files own BEGIN/COMMIT: avoid nested transactions.
+            conn.autocommit = True
             for path in sorted(MIGRATIONS.glob("*.sql")):
                 with conn.cursor() as cur:
                     cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
             with conn.cursor() as cur:
                 cur.execute(
                     "INSERT INTO usuarios (nome, usuario, senha, tipo) "
@@ -42,9 +45,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
         # Re-run migrations to ensure deployments can safely restart.
         with conectar_postgresql(url) as conn:
+            # Migration files own BEGIN/COMMIT: avoid nested transactions.
+            conn.autocommit = True
             for path in sorted(MIGRATIONS.glob("*.sql")):
                 with conn.cursor() as cur:
                     cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
             conn.commit()
 
         with conectar_postgresql(url) as conn:
@@ -64,9 +70,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual((parsed.hostname, parsed.path, parsed.username),
                          ("localhost", "/movyla_ci", "movyla_ci"))
         with conectar_postgresql(url) as conn:
+            # Migration files own BEGIN/COMMIT: avoid nested transactions.
+            conn.autocommit = True
             for path in sorted(MIGRATIONS.glob("*.sql")):
                 with conn.cursor() as cur:
                     cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
             with conn.cursor() as cur:
                 cur.execute(
                     "INSERT INTO usuarios (nome, usuario, senha, tipo) "
@@ -114,6 +123,53 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                     (cobranca_id,),
                 )
                 self.assertEqual(cur.fetchone()[0], 1)
+
+
+    def test_recuperacao_senha_persiste_e_email_unico(self):
+        """Validate recovery-token storage and case-insensitive email uniqueness."""
+        from psycopg.errors import UniqueViolation
+        url = os.environ["TEST_POSTGRES_URL"]
+        parsed = urlparse(url)
+        self.assertEqual((parsed.hostname, parsed.path, parsed.username),
+                         ("localhost", "/movyla_ci", "movyla_ci"))
+        with conectar_postgresql(url) as conn:
+            conn.autocommit = True
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo, email) "
+                    "VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                    ("Teste Recuperacao", "recuperacao_pg_ci", "hash", "personal",
+                     "teste.recuperacao@example.invalid"),
+                )
+                usuario_id = cur.fetchone()[0]
+                cur.execute(
+                    "INSERT INTO recuperacao_senha (usuario_id, token_hash, expira_em) "
+                    "VALUES (%s, %s, %s) RETURNING id",
+                    (usuario_id, "hash_recuperacao_ci", "2026-11-15 12:00:00"),
+                )
+                token_id = cur.fetchone()[0]
+            conn.commit()
+        with conectar_postgresql(url) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT usuario_id, token_hash FROM recuperacao_senha WHERE id = %s",
+                    (token_id,),
+                )
+                token = cur.fetchone()
+                self.assertEqual(token["usuario_id"], usuario_id)
+                self.assertEqual(token["token_hash"], "hash_recuperacao_ci")
+                with conn.transaction():
+                    with self.assertRaises(UniqueViolation):
+                        cur.execute(
+                            "INSERT INTO usuarios (nome, usuario, senha, tipo, email) "
+                            "VALUES (%s, %s, %s, %s, %s)",
+                            ("Duplicado", "duplicado_pg_ci", "hash", "personal",
+                             "TESTE.RECUPERACAO@EXAMPLE.INVALID"),
+                        )
 
 
 if __name__ == "__main__":
