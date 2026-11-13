@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cupons | MOVYLA Training</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='movyla.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin_premium.css') }}">
+<style>
+*{box-sizing:border-box}body{background:#090e0b;color:#f3f8f4;font-family:Arial,sans-serif;margin:0}
+main{max-width:1050px;margin:auto;padding:30px 18px 65px}a{color:#b7f657;text-decoration:none}
+h1{font-size:32px;margin:25px 0 10px}p{color:#a6b4a9;line-height:1.5}
+.panel{background:#111d16;border:1px solid #2d4b38;border-radius:18px;padding:22px;margin-top:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+label{display:block;font-size:13px;margin-bottom:7px;color:#d6e4d9}
+input,select{width:100%;background:#0b130e;border:1px solid #365440;border-radius:9px;padding:12px;color:white;font:inherit}
+button{background:#b7f657;color:#07120a;border:0;border-radius:9px;padding:12px 17px;font-weight:800;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:12px}td,th{text-align:left;padding:12px;border-bottom:1px solid #2d4b38;font-size:13px}
+.scroll{overflow-x:auto}.notice{padding:12px;border-radius:10px;background:#193422;margin-top:14px}
+.error{background:#412020}.muted{color:#a6b4a9}
+</style>
+</head>
+<body><main>
+<a href="{{ url_for('inicio') }}">← Voltar ao dashboard</a>
+<h1>Cupons de desconto</h1>
+<p>Crie códigos promocionais para assinaturas MOVYLA. O cadastro de cupons não confirma pagamentos nem altera vencimentos.</p>
+{% if sucesso %}<div class="notice" role="status">Alteração salva.</div>{% endif %}
+{% if erro %}<div class="notice error" role="alert">{{ erro }}</div>{% endif %}
+<section class="panel">
+<h2>Novo cupom</h2>
+<form method="post" action="{{ url_for('administrar_cupons') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="acao" value="criar">
+<div class="grid">
+<div><label for="codigo">Código promocional</label><input id="codigo" name="codigo" minlength="3" maxlength="32" placeholder="EX: ALE20" required></div>
+<div><label for="desconto">Desconto fixo (R$)</label><input id="desconto" type="number" name="desconto" min="0.01" max="100000" step="0.01" required></div>
+<div><label for="personal">Personal (opcional)</label><select id="personal" name="personal_id"><option value="">Qualquer personal</option>{% for personal in personais %}<option value="{{ personal.id }}">{{ personal.nome }}</option>{% endfor %}</select></div>
+<div><label for="plano">Plano (opcional)</label><select id="plano" name="plano_id"><option value="">Qualquer plano</option>{% for plano in planos %}<option value="{{ plano.id }}">{{ plano.nome }}</option>{% endfor %}</select></div>
+</div>
+<button type="submit" style="margin-top:20px">Criar cupom</button>
+</form>
+</section>
+<section class="panel">
+<h2>Cupons cadastrados</h2>
+<div class="scroll"><table><thead><tr><th>Código</th><th>Desconto</th><th>Personal</th><th>Plano</th><th>Situação</th><th>Ação</th></tr></thead><tbody>
+{% for cupom in cupons %}
+<tr><td><strong>{{ cupom.codigo }}</strong></td>
+<td>R$ {{ '%.2f'|format(cupom.desconto_centavos / 100)|replace('.', ',') }}</td>
+<td>{{ cupom.personal_nome or 'Todos' }}</td><td>{{ cupom.plano_nome or 'Todos' }}</td>
+<td>{% if cupom.usado_em %}Utilizado{% elif cupom.ativo %}Ativo{% else %}Inativo{% endif %}</td>
+<td>{% if cupom.ativo and not cupom.usado_em %}
+<form method="post" action="{{ url_for('administrar_cupons') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="acao" value="desativar">
+<input type="hidden" name="cupom_id" value="{{ cupom.id }}">
+<button type="submit">Desativar</button>
+</form>{% else %}<span class="muted">—</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">Nenhum cupom cadastrado.</td></tr>{% endfor %}
+</tbody></table></div>
+</section></main></body></html>

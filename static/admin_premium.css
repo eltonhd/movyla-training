@@ -1,0 +1,17 @@
+/* MOVYLA Premium — componentes administrativos compartilhados */
+:root{--movyla-bg:#080d0a;--movyla-panel:#111e16;--movyla-border:#2a4935;--movyla-lime:#b7f657;--movyla-text:#f3f8f4;--movyla-muted:#afc0b3}
+body{background:radial-gradient(ellipse 85% 35% at 50% -10%,rgba(65,172,99,.15),transparent 70%),var(--movyla-bg)!important;color:var(--movyla-text)}
+main{max-width:1120px}
+h1{letter-spacing:-.045em;line-height:1.12}
+h2{letter-spacing:-.025em}
+.card,.panel{background:linear-gradient(155deg,rgba(25,47,32,.97),rgba(12,23,16,.98))!important;border:1px solid var(--movyla-border)!important;box-shadow:0 14px 45px rgba(0,0,0,.18);transition:border-color .2s,transform .2s}
+.card:hover,.panel:hover{border-color:#497452!important}
+input,select,textarea{min-height:44px;transition:border-color .15s,box-shadow .15s}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--movyla-lime);outline-offset:3px}
+input:focus,select:focus{border-color:var(--movyla-lime);box-shadow:0 0 0 3px rgba(183,246,87,.1)}
+button{transition:filter .15s,transform .15s}
+button:hover{filter:brightness(1.07)}
+button:active{transform:translateY(1px)}
+th{color:#c7e1cd;font-weight:700}
+@media(max-width:640px){main{padding:24px 16px 56px!important}.card,.panel{padding:18px!important;border-radius:16px!important}h1{font-size:30px!important}.scroll{margin:0 -4px}td,th{white-space:nowrap}button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}

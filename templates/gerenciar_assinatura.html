@@ -312,6 +312,18 @@
             <div class="secao-titulo">
                 Informações do plano
             </div>
+            <div class="campo">
+                <label for="plano_catalogo_id">Selecionar plano cadastrado (opcional)</label>
+                <select id="plano_catalogo_id" name="plano_catalogo_id">
+                    <option value="">Personalizado / manter campos manuais</option>
+                    {% for item in planos_disponiveis %}
+                    <option value="{{ item.id }}">
+                        {{ item.nome }} — {{ item.periodo_meses }} mês(es) — R$ {{ '%.2f'|format(item.preco_centavos / 100)|replace('.', ',') }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small style="color:#a6b4a9;display:block;margin-top:8px;">O servidor aplica o preço e a duração cadastrados quando um plano é selecionado.</small>
+            </div>
 
             <div class="campo">
                 <label for="plano">Nome do plano</label>
