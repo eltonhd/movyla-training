@@ -162,8 +162,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 token = cur.fetchone()
                 self.assertEqual(token["usuario_id"], usuario_id)
                 self.assertEqual(token["token_hash"], "hash_recuperacao_ci")
-                with conn.transaction():
-                    with self.assertRaises(UniqueViolation):
+                with self.assertRaises(UniqueViolation):
+                    with conn.transaction():
                         cur.execute(
                             "INSERT INTO usuarios (nome, usuario, senha, tipo, email) "
                             "VALUES (%s, %s, %s, %s, %s)",
