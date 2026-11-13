@@ -172,5 +172,41 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                         )
 
 
+    def test_login_hash_werkzeug_persiste_entre_conexoes(self):
+        """Exercise the actual password hashing used by MOVYLA login."""
+        from werkzeug.security import generate_password_hash, check_password_hash
+        url = os.environ["TEST_POSTGRES_URL"]
+        parsed = urlparse(url)
+        self.assertEqual((parsed.hostname, parsed.path, parsed.username),
+                         ("localhost", "/movyla_ci", "movyla_ci"))
+        senha = "senha_de_teste_nao_real"
+        hash_senha = generate_password_hash(senha)
+        with conectar_postgresql(url) as conn:
+            conn.autocommit = True
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo) "
+                    "VALUES (%s, %s, %s, %s) RETURNING id",
+                    ("Login CI", "login_pg_ci", hash_senha, "personal"),
+                )
+                usuario_id = cur.fetchone()[0]
+            conn.commit()
+        with conectar_postgresql(url) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT id, senha, tipo FROM usuarios WHERE usuario = %s",
+                    ("login_pg_ci",),
+                )
+                registro = cur.fetchone()
+                self.assertEqual(registro["id"], usuario_id)
+                self.assertEqual(registro["tipo"], "personal")
+                self.assertTrue(check_password_hash(registro["senha"], senha))
+                self.assertFalse(check_password_hash(registro["senha"], "senha_errada"))
+
+
 if __name__ == "__main__":
     unittest.main()
