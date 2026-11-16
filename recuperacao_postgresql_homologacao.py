@@ -81,9 +81,9 @@ def salvar_nova_senha_postgresql(token, nova_senha, url=None):
             )
             cur.execute(
                 "UPDATE recuperacao_senha SET utilizado_em = %s "
-                "WHERE token_hash = %s AND utilizado_em IS NULL",
-                (_agora().isoformat(), token_hash),
+                "WHERE usuario_id = %s AND utilizado_em IS NULL",
+                (_agora().isoformat(), registro["usuario_id"]),
             )
-            if cur.rowcount != 1:
+            if cur.rowcount < 1:
                 raise RuntimeError("Token alterado durante a recuperacao")
     return True
