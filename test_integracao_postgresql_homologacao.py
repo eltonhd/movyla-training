@@ -274,12 +274,17 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 usuario_id = cur.fetchone()[0]
             conn.commit()
         token = criar_token_postgresql(usuario_id, url)
+        token_anterior = criar_token_postgresql(usuario_id, url)
         self.assertEqual(validar_token_postgresql(token, url), usuario_id)
+        self.assertEqual(validar_token_postgresql(token_anterior, url), usuario_id)
         self.assertIsNone(validar_token_postgresql("token_invalido", url))
         self.assertFalse(salvar_nova_senha_postgresql(token, "curta", url))
         self.assertTrue(salvar_nova_senha_postgresql(token, "senha_nova_segura", url))
         self.assertIsNone(validar_token_postgresql(token, url))
+        self.assertIsNone(validar_token_postgresql(token_anterior, url))
         self.assertFalse(salvar_nova_senha_postgresql(token, "outra_senha_segura", url))
+        self.assertFalse(salvar_nova_senha_postgresql(
+            token_anterior, "outra_senha_segura", url))
         with conectar_postgresql(url) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT senha FROM usuarios WHERE id = %s", (usuario_id,))
