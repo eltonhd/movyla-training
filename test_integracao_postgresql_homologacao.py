@@ -208,5 +208,45 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 self.assertFalse(check_password_hash(registro["senha"], "senha_errada"))
 
 
+    def test_autenticacao_postgresql_isolada(self):
+        from werkzeug.security import generate_password_hash
+        from login_postgresql_homologacao import autenticar_usuario_postgresql
+        url = os.environ["TEST_POSTGRES_URL"]
+        parsed = urlparse(url)
+        self.assertEqual((parsed.hostname, parsed.path, parsed.username),
+                         ("localhost", "/movyla_ci", "movyla_ci"))
+        with conectar_postgresql(url) as conn:
+            conn.autocommit = True
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo, ativo) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    ("Login Isolado", "login_isolado_pg_ci",
+                     generate_password_hash("senha_teste"), "personal", 1),
+                )
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo, ativo) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    ("Login Inativo", "login_inativo_pg_ci",
+                     generate_password_hash("senha_teste"), "personal", 0),
+                )
+            conn.commit()
+        dados = autenticar_usuario_postgresql(
+            "login_isolado_pg_ci", "senha_teste", url)
+        self.assertEqual(dados["nome"], "Login Isolado")
+        self.assertEqual(dados["tipo"], "personal")
+        self.assertNotIn("senha", dados)
+        self.assertIsNone(autenticar_usuario_postgresql(
+            "login_isolado_pg_ci", "senha_errada", url))
+        self.assertIsNone(autenticar_usuario_postgresql(
+            "login_inativo_pg_ci", "senha_teste", url))
+        self.assertIsNone(autenticar_usuario_postgresql(
+            "usuario_inexistente", "senha_teste", url))
+
+
 if __name__ == "__main__":
     unittest.main()
