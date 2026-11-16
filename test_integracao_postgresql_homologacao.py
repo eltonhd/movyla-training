@@ -248,5 +248,44 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "usuario_inexistente", "senha_teste", url))
 
 
+    def test_recuperacao_real_token_uso_unico(self):
+        from werkzeug.security import generate_password_hash, check_password_hash
+        from recuperacao_postgresql_homologacao import (
+            criar_token_postgresql, validar_token_postgresql,
+            salvar_nova_senha_postgresql,
+        )
+        url = os.environ["TEST_POSTGRES_URL"]
+        parsed = urlparse(url)
+        self.assertEqual((parsed.hostname, parsed.path, parsed.username),
+                         ("localhost", "/movyla_ci", "movyla_ci"))
+        with conectar_postgresql(url) as conn:
+            conn.autocommit = True
+            for path in sorted(MIGRATIONS.glob("*.sql")):
+                with conn.cursor() as cur:
+                    cur.execute(path.read_text(encoding="utf-8"))
+            conn.autocommit = False
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO usuarios (nome, usuario, senha, tipo) "
+                    "VALUES (%s, %s, %s, %s) RETURNING id",
+                    ("Recuperacao Real", "recuperacao_real_ci",
+                     generate_password_hash("senha_antiga"), "personal"),
+                )
+                usuario_id = cur.fetchone()[0]
+            conn.commit()
+        token = criar_token_postgresql(usuario_id, url)
+        self.assertEqual(validar_token_postgresql(token, url), usuario_id)
+        self.assertIsNone(validar_token_postgresql("token_invalido", url))
+        self.assertFalse(salvar_nova_senha_postgresql(token, "curta", url))
+        self.assertTrue(salvar_nova_senha_postgresql(token, "senha_nova_segura", url))
+        self.assertIsNone(validar_token_postgresql(token, url))
+        self.assertFalse(salvar_nova_senha_postgresql(token, "outra_senha_segura", url))
+        with conectar_postgresql(url) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT senha FROM usuarios WHERE id = %s", (usuario_id,))
+                self.assertTrue(check_password_hash(
+                    cur.fetchone()["senha"], "senha_nova_segura"))
+
+
 if __name__ == "__main__":
     unittest.main()
