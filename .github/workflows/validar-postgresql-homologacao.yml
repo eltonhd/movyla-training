@@ -1,0 +1,49 @@
+name: Validar PostgreSQL homologacao
+
+on:
+  push:
+    branches:
+      - desenvolvimento-seguro-20261013
+    paths:
+      - 'postgresql_homologacao.py'
+      - 'migrations/postgresql/**'
+      - 'test_postgresql_homologacao.py'
+      - 'test_esquema_postgresql_homologacao.py'
+      - 'test_integracao_postgresql_homologacao.py'
+      - '.github/workflows/validar-postgresql-homologacao.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes-postgresql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: movyla_ci
+          POSTGRES_PASSWORD: senha_apenas_ci
+          POSTGRES_DB: movyla_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U movyla_ci -d movyla_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgresql://movyla_ci:senha_apenas_ci@localhost:5432/movyla_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar driver PostgreSQL
+        run: python -m pip install "psycopg[binary]>=3.2,<4"
+      - name: Validar sintaxe
+        run: python -m py_compile postgresql_homologacao.py test_postgresql_homologacao.py test_esquema_postgresql_homologacao.py test_integracao_postgresql_homologacao.py
+      - name: Executar testes offline e PostgreSQL descartavel
+        run: python -m unittest -v test_postgresql_homologacao test_esquema_postgresql_homologacao test_integracao_postgresql_homologacao

@@ -1,0 +1,155 @@
+import sqlite3
+import unittest
+
+from planos import criar_tabela_planos
+from cobrancas import (
+    criar_tabela_cobrancas, criar_tabela_cupons,
+    registrar_cobranca_com_cupom, preparar_descontos_cobrancas,
+    cancelar_cobranca_pendente, expirar_cobranca_pendente,
+    registrar_confirmacao_verificada
+)
+
+
+class TestarCobrancaComCupom(unittest.TestCase):
+    def setUp(self):
+        self.conn = sqlite3.connect(":memory:")
+        self.conn.execute("""
+            CREATE TABLE assinaturas_personais (
+                id INTEGER PRIMARY KEY, tipo_assinatura TEXT, isento INTEGER
+            )
+        """)
+        self.conn.execute(
+            "INSERT INTO assinaturas_personais VALUES (1, 'paga', 0)"
+        )
+        criar_tabela_planos(self.conn)
+        criar_tabela_cobrancas(self.conn)
+        criar_tabela_cupons(self.conn)
+        self.conn.execute("""
+            INSERT INTO cupons_assinatura
+                (codigo, desconto_centavos, personal_id, plano_id, administrador_id)
+            VALUES ('PROMO10', 1000, 7, 1, 5)
+        """)
+
+    def tearDown(self):
+        self.conn.close()
+
+    def test_preserva_preco_e_reserva(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-1", "promo10", 7, 5
+        )
+        registro = self.conn.execute("""
+            SELECT valor_original_centavos, desconto_centavos, valor_centavos, status
+            FROM cobrancas_assinatura WHERE id = ?
+        """, (cobranca_id,)).fetchone()
+        self.assertEqual(registro, (5000, 1000, 4000, "pendente"))
+        cupom = self.conn.execute("""
+            SELECT cobranca_id, usado_em FROM cupons_assinatura WHERE codigo = 'PROMO10'
+        """).fetchone()
+        self.assertEqual(cupom, (cobranca_id, None))
+
+    def test_cupom_reservado_nao_aparece_disponivel(self):
+        from cobrancas import consultar_desconto
+        registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-reservado", "PROMO10", 7, 5
+        )
+        with self.assertRaises(ValueError):
+            consultar_desconto(self.conn, "PROMO10", 7, 1, 5000, 5)
+
+    def test_nao_permite_reservar_duas_vezes(self):
+        registrar_cobranca_com_cupom(self.conn, 1, 1, "pedido-1", "PROMO10", 7, 5)
+        with self.assertRaises(ValueError):
+            registrar_cobranca_com_cupom(self.conn, 1, 1, "pedido-2", "PROMO10", 7, 5)
+        total = self.conn.execute("SELECT COUNT(*) FROM cobrancas_assinatura").fetchone()[0]
+        self.assertEqual(total, 1)
+
+    def test_administrador_incorreto_reverte(self):
+        with self.assertRaises(ValueError):
+            registrar_cobranca_com_cupom(self.conn, 1, 1, "pedido-3", "PROMO10", 7, 6)
+        total = self.conn.execute("SELECT COUNT(*) FROM cobrancas_assinatura").fetchone()[0]
+        self.assertEqual(total, 0)
+
+    def test_cancelamento_libera_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-cancelado", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        registro = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()
+        reserva = self.conn.execute(
+            "SELECT cobranca_id FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()
+        self.assertEqual(registro[0], "cancelada")
+        self.assertIsNone(reserva[0])
+
+    def test_expiracao_libera_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-expirado", "PROMO10", 7, 5
+        )
+        expirar_cobranca_pendente(self.conn, cobranca_id)
+        registro = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()
+        self.assertEqual(registro[0], "expirada")
+        reserva = self.conn.execute(
+            "SELECT cobranca_id FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()
+        self.assertIsNone(reserva[0])
+
+    def test_nao_cancela_duas_vezes(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-unico", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        with self.assertRaises(ValueError):
+            cancelar_cobranca_pendente(self.conn, cobranca_id)
+
+    def test_confirmacao_unica_consume_cupom(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-pago", "PROMO10", 7, 5
+        )
+        self.assertTrue(
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-123")
+        )
+        self.assertFalse(
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-123")
+        )
+        status = self.conn.execute(
+            "SELECT status FROM cobrancas_assinatura WHERE id = ?", (cobranca_id,)
+        ).fetchone()[0]
+        usado_em = self.conn.execute(
+            "SELECT usado_em FROM cupons_assinatura WHERE codigo = 'PROMO10'"
+        ).fetchone()[0]
+        self.assertEqual(status, "paga")
+        self.assertIsNotNone(usado_em)
+
+    def test_identificador_diferente_nao_reconfirma(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-id", "PROMO10", 7, 5
+        )
+        registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-1")
+        with self.assertRaises(ValueError):
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-2")
+
+    def test_cobranca_cancelada_nao_pode_ser_confirmada(self):
+        cobranca_id = registrar_cobranca_com_cupom(
+            self.conn, 1, 1, "pedido-cancelar", "PROMO10", 7, 5
+        )
+        cancelar_cobranca_pendente(self.conn, cobranca_id)
+        with self.assertRaises(ValueError):
+            registrar_confirmacao_verificada(self.conn, cobranca_id, "pix-3")
+
+    def test_migracao_preserva_cobranca_antiga(self):
+        from cobrancas import registrar_cobranca
+        registrar_cobranca(self.conn, 1, 1, "antiga")
+        preparar_descontos_cobrancas(self.conn)
+        preparar_descontos_cobrancas(self.conn)
+        registro = self.conn.execute("""
+            SELECT valor_original_centavos, desconto_centavos, valor_centavos
+            FROM cobrancas_assinatura WHERE referencia = 'antiga'
+        """).fetchone()
+        self.assertEqual(registro, (5000, 0, 5000))
+
+
+if __name__ == "__main__":
+    unittest.main()

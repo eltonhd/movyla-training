@@ -176,6 +176,134 @@
     .rodape-acoes a {
         text-decoration: none;
     }
+
+
+/* =========================================
+   MOVYLA TRAINING - PERSONAIS PREMIUM
+   ========================================= */
+
+body {
+    background:
+        radial-gradient(
+            ellipse at 85% 5%,
+            rgba(30, 150, 85, 0.12),
+            transparent 40%
+        ),
+        #080e0b;
+    color: #f5f8f5;
+}
+
+.pagina {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 42px 18px 70px;
+}
+
+.label-pagina {
+    color: #43e581;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.cabecalho-pagina h1 {
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #f5f8f5;
+}
+
+.cabecalho-pagina p {
+    color: #a6b4a9;
+    font-size: 15px;
+}
+
+.acoes-topo {
+    margin: 30px 0;
+}
+
+.acoes-topo .botao-principal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 26px;
+    border-radius: 13px;
+    background: #b7f657;
+    color: #07120c;
+    font-weight: 900;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(183, 246, 87, 0.14);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.acoes-topo .botao-principal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(183, 246, 87, 0.25);
+}
+
+.personal-card {
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(67, 229, 129, .12),
+            transparent 55%
+        ),
+        linear-gradient(135deg, #10291c, #0c1711);
+    border: 1px solid #244536;
+    border-radius: 22px;
+    padding: 28px;
+}
+
+.personal-avatar {
+    background: linear-gradient(135deg, #43e581, #148a48);
+    color: #07120c;
+    border: 2px solid #b7f657;
+}
+
+.personal-info strong {
+    color: #b7f657;
+}
+
+.status-ativo {
+    background: rgba(67, 229, 129, .12);
+    color: #43e581;
+}
+
+.vazio {
+    padding: 60px 25px;
+    background: linear-gradient(135deg, #10291c, #0b1510);
+    border: 1px solid #244536;
+    border-radius: 22px;
+}
+
+.vazio strong {
+    color: #f5f8f5;
+    font-size: 23px;
+}
+
+.rodape-acoes a {
+    color: #43e581;
+    font-weight: 700;
+}
+
+.rodape-acoes a:hover {
+    color: #b7f657;
+}
+
+@media (max-width: 600px) {
+    .pagina {
+        padding: 25px 12px 45px;
+    }
+
+    .acoes-topo .botao-principal {
+        width: 100%;
+    }
+
+    .personais-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 </style>
 
 

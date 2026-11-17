@@ -1,0 +1,4 @@
+# Dependencias exclusivas do teste PostgreSQL em homologacao.
+# Nao substituir requirements.txt nem instalar em producao antes da integracao.
+-r requirements.txt
+psycopg[binary]>=3.2,<4
