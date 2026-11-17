@@ -47,3 +47,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Validar migracoes PostgreSQL e renovacao em banco descartavel
         run: python -m unittest -v test_postgresql_homologacao test_esquema_postgresql_homologacao test_integracao_postgresql_homologacao
+      - name: Auditar bloqueios SQLite antes da migracao
+        run: python auditar_sqlite_postgresql.py
